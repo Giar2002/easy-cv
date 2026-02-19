@@ -1079,7 +1079,7 @@ body {
     width: 100%;
     max-width: 800px;
     background: var(--cv-bg);
-    border-radius: var(--radius-lg);
+    border-radius: 20px;
     box-shadow: var(--shadow-lg);
     padding: 2.5rem;
     padding-bottom: 3rem;
@@ -1143,6 +1143,8 @@ body {
     gap: 0.35rem;
     font-size: 0.78rem;
     color: var(--cv-text-secondary);
+    word-break: break-all;
+    overflow-wrap: break-word;
 }
 
 .cv-contact-item svg {
@@ -3323,6 +3325,8 @@ body {
     display: flex;
     padding: 0;
     min-height: 100%;
+    border-radius: 20px;
+    overflow: hidden;
 }
 
 .template-sidebar-dark .cv-sidebar {
@@ -3381,6 +3385,8 @@ body {
 
 .template-sidebar-dark .cv-contact-item {
     color: #cbd5e0;
+    word-break: break-all;
+    overflow-wrap: break-word;
 }
 
 .template-sidebar-dark .cv-contact-item svg {

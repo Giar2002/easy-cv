@@ -196,7 +196,11 @@ export default function SettingsTab() {
     const [activeCategory, setActiveCategory] = useState<TemplateCategory>('all');
 
     const categories = Object.entries(TEMPLATE_CATEGORIES) as [TemplateCategory, { name: string; icon: string }][];
-    const filteredTemplates = activeCategory === 'all' ? TEMPLATES : TEMPLATES.filter(t => t.category === activeCategory);
+    const filteredTemplates = activeCategory === 'all'
+        ? TEMPLATES
+        : activeCategory === 'popular'
+            ? TEMPLATES.filter(t => t.popular)
+            : TEMPLATES.filter(t => t.category === activeCategory);
 
     return (
         <div>

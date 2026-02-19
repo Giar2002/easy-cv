@@ -74,7 +74,7 @@ export interface CVData {
     settings: CVSettings;
 }
 
-export type TemplateCategory = 'all' | 'ats' | 'general' | 'creative' | 'professional' | 'industry' | 'layout';
+export type TemplateCategory = 'all' | 'popular' | 'ats' | 'general' | 'creative' | 'professional' | 'industry' | 'layout';
 
 export interface TemplateConfig {
     id: string;

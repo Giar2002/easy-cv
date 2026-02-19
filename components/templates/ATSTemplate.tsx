@@ -65,6 +65,7 @@ export default function ATSTemplate({ data }: TemplateProps) {
                                     <span className="cv-entry-date">{proj.startDate}{proj.endDate && ` — ${proj.endDate}`}</span>
                                 </div>
                                 {proj.description && <div className="cv-entry-desc">{nl2br(proj.description)}</div>}
+                                {proj.link && <div className="cv-entry-link"><a href={proj.link} target="_blank" rel="noopener noreferrer">🔗 {proj.link}</a></div>}
                             </div>
                         ))}
                     </div>

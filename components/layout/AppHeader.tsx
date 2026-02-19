@@ -2,12 +2,10 @@
 
 import { useState } from 'react';
 import { useCVStore } from '@/store/useCVStore';
-import { exportToPDF } from '@/lib/pdfExport';
 import AIImportModal from '@/components/modals/AIImportModal';
 
 export default function AppHeader() {
     const resetAll = useCVStore(s => s.resetAll);
-    const personal = useCVStore(s => s.personal);
     const [showImportModal, setShowImportModal] = useState(false);
 
     function handleReset() {
@@ -16,15 +14,8 @@ export default function AppHeader() {
         }
     }
 
-    async function handleDownloadPDF() {
-        const btn = document.getElementById('btn-download-pdf');
-        if (btn) btn.textContent = 'Generating...';
-        try {
-            const name = personal.fullName?.replace(/\s+/g, '_') || 'CV';
-            await exportToPDF('cv-page', `${name}_CV.pdf`);
-        } finally {
-            if (btn) btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg><span>Download PDF</span>';
-        }
+    function handleDownloadPDF() {
+        window.print();
     }
 
     return (

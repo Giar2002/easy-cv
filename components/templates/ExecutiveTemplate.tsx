@@ -76,6 +76,7 @@ export default function ExecutiveTemplate({ data }: TemplateProps) {
                                 </div>
                                 {proj.role && <div className="cv-entry-subtitle">{proj.role}</div>}
                                 {proj.description && <div className="cv-entry-desc">{nl2br(proj.description)}</div>}
+                                {proj.link && <div className="cv-entry-link"><a href={proj.link} target="_blank" rel="noopener noreferrer">🔗 {proj.link}</a></div>}
                             </div>
                         ))}
                     </div>

@@ -36,11 +36,12 @@ export const TEMPLATES: TemplateConfig[] = [
     { id: 'two-column', name: 'Two Column', category: 'layout', atsScore: 3 },
     { id: 'timeline', name: 'Timeline', category: 'layout', atsScore: 3 },
     { id: 'magazine', name: 'Magazine', category: 'layout', atsScore: 2 },
-    { id: 'sidebar-dark', name: 'Sidebar Dark', category: 'layout', atsScore: 2 },
+    { id: 'sidebar-dark', name: 'Sidebar Dark', category: 'layout', atsScore: 2, popular: true },
 ];
 
 export const TEMPLATE_CATEGORIES: Record<TemplateCategory, { name: string; icon: string; desc?: string }> = {
     all: { name: 'Semua Template', icon: '📋' },
+    popular: { name: 'Populer', icon: '🔥', desc: 'Template paling populer' },
     ats: { name: 'ATS-Friendly', icon: '✅', desc: 'Optimized untuk ATS systems' },
     general: { name: 'General', icon: '📄', desc: 'Cocok untuk semua profesi' },
     creative: { name: 'Creative', icon: '🎨', desc: 'Design kreatif dan visual' },

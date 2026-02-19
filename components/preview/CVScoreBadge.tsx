@@ -3,100 +3,68 @@
 import { useState, useEffect } from 'react';
 import { useCVStore } from '@/store/useCVStore';
 
+// Criteria and weights matching the original app.js exactly
 function calculateScore(state: ReturnType<typeof useCVStore.getState>) {
-    const { personal, experience, education, skills } = state;
+    const p = state.personal;
+    const criteria = [
+        { key: 'name', label: 'Nama Lengkap', done: !!p.fullName && p.fullName.trim().length >= 3 },
+        { key: 'title', label: 'Jabatan / Profesi', done: !!p.jobTitle && p.jobTitle.trim().length >= 2 },
+        { key: 'email', label: 'Email', done: !!p.email && p.email.includes('@') },
+        { key: 'phone', label: 'Telepon', done: !!p.phone && p.phone.trim().length >= 6 },
+        { key: 'summary', label: 'Ringkasan Profil', done: !!p.summary && p.summary.trim().length >= 10 },
+        { key: 'experience', label: 'Pengalaman Kerja', done: state.experience.length > 0 && state.experience.some(e => e.title && e.company) },
+        { key: 'education', label: 'Pendidikan', done: state.education.length > 0 && state.education.some(e => e.school) },
+        { key: 'skills', label: 'Keahlian (min 3)', done: state.skills.filter(s => s.name && s.name.trim()).length >= 3 },
+    ];
+
+    const weights: Record<string, number> = { name: 15, title: 10, email: 10, phone: 5, summary: 20, experience: 20, education: 10, skills: 10 };
     let score = 0;
-    const breakdown: { label: string; score: number; max: number }[] = [];
+    criteria.forEach(c => { if (c.done) score += weights[c.key]; });
+    score = Math.min(100, Math.round(score));
+
+    // Tips matching original
     const tips: string[] = [];
+    if (!criteria[4].done) tips.push('Tulis ringkasan profil minimal 10 karakter agar CV lebih menarik.');
+    if (!criteria[5].done) tips.push('Tambahkan minimal 1 pengalaman kerja dengan posisi dan perusahaan.');
+    if (!criteria[7].done) tips.push('Tambahkan minimal 3 keahlian untuk menunjukkan kompetensi.');
+    if (!criteria[2].done) tips.push('Sertakan alamat email yang valid.');
+    if (!criteria[6].done) tips.push('Cantumkan riwayat pendidikan Anda.');
 
-    // Personal info (max 30)
-    let pScore = 0;
-    if (personal.fullName?.length > 1) pScore += 6;
-    else tips.push('Tambahkan nama lengkap');
-    if (personal.jobTitle?.length > 1) pScore += 6;
-    else tips.push('Tambahkan jabatan/profesi');
-    if (personal.email?.length > 3) pScore += 4;
-    if (personal.phone?.length > 5) pScore += 4;
-    if (personal.location?.length > 2) pScore += 4;
-    if (personal.summary?.length >= 30) pScore += 6;
-    else if (personal.summary?.length >= 10) pScore += 3;
-    else tips.push('Tulis ringkasan profil minimal 30 karakter');
-    breakdown.push({ label: 'Data Pribadi', score: pScore, max: 30 });
-    score += pScore;
-
-    // Experience (max 25)
-    let eScore = 0;
-    if (experience.length > 0) {
-        eScore += Math.min(experience.length * 8, 20);
-        const filled = experience.filter(e => e.title && e.company);
-        eScore += filled.length > 0 ? 5 : 0;
-    } else tips.push('Tambahkan minimal 1 pengalaman kerja');
-    breakdown.push({ label: 'Pengalaman', score: Math.min(eScore, 25), max: 25 });
-    score += Math.min(eScore, 25);
-
-    // Education (max 20)
-    let edScore = 0;
-    if (education.length > 0) {
-        edScore += Math.min(education.length * 10, 15);
-        const filled = education.filter(e => e.school && e.degree);
-        edScore += filled.length > 0 ? 5 : 0;
-    } else tips.push('Tambahkan riwayat pendidikan');
-    breakdown.push({ label: 'Pendidikan', score: Math.min(edScore, 20), max: 20 });
-    score += Math.min(edScore, 20);
-
-    // Skills (max 15)
-    let sScore = 0;
-    if (skills.length >= 3) sScore = 15;
-    else if (skills.length > 0) sScore = skills.length * 4;
-    else tips.push('Tambahkan minimal 3 keahlian');
-    breakdown.push({ label: 'Keahlian', score: Math.min(sScore, 15), max: 15 });
-    score += Math.min(sScore, 15);
-
-    // Extras (max 10)
-    let xScore = 0;
-    if (state.projects.length > 0) xScore += 4;
-    if (state.certifications.length > 0) xScore += 3;
-    if (state.languages.length > 0) xScore += 3;
-    breakdown.push({ label: 'Tambahan', score: Math.min(xScore, 10), max: 10 });
-    score += Math.min(xScore, 10);
-
-    return { score: Math.min(score, 100), breakdown, tips };
+    return { score, criteria, tips };
 }
 
-function getScoreLabel(score: number) {
-    if (score >= 80) return { text: 'Sangat Baik', cls: 'excellent' };
-    if (score >= 60) return { text: 'Baik', cls: 'good' };
-    if (score >= 40) return { text: 'Cukup', cls: 'fair' };
-    return { text: 'Belum Lengkap', cls: 'poor' };
+function getScoreStyle(score: number) {
+    if (score >= 80) return { color: '#34d399', cls: 'excellent', text: 'Sangat Baik' };
+    if (score >= 55) return { color: '#3b82f6', cls: 'good', text: 'Baik' };
+    if (score >= 30) return { color: '#fbbf24', cls: 'fair', text: 'Cukup' };
+    return { color: '#ff4d6a', cls: 'poor', text: 'Perlu Dilengkapi' };
 }
 
 export default function CVScoreBadge() {
-    const personal = useCVStore(s => s.personal);
-    const experience = useCVStore(s => s.experience);
-    const education = useCVStore(s => s.education);
-    const skills = useCVStore(s => s.skills);
-    const projects = useCVStore(s => s.projects);
-    const certifications = useCVStore(s => s.certifications);
-    const languages = useCVStore(s => s.languages);
+    // Subscribe to store changes
+    useCVStore(s => s.personal);
+    useCVStore(s => s.experience);
+    useCVStore(s => s.education);
+    useCVStore(s => s.skills);
+
     const [showModal, setShowModal] = useState(false);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => { setMounted(true); }, []);
 
-    // Only calculate score after mount to avoid SSR/client mismatch
-    // (server has no localStorage, client has persisted data)
     const state = useCVStore.getState();
-    const { score, breakdown, tips } = mounted ? calculateScore(state) : { score: 0, breakdown: [], tips: [] };
-    const label = getScoreLabel(score);
+    const { score, criteria, tips } = mounted ? calculateScore(state) : { score: 0, criteria: [], tips: [] };
+    const style = getScoreStyle(score);
 
-    // SVG circle math
+    // Badge SVG circle math
     const r = 35;
     const circumference = 2 * Math.PI * r;
-    const offset = circumference * (1 - score / 100);
+    const offset = circumference - (score / 100) * circumference;
 
+    // Modal SVG circle math
     const rBig = 52;
     const circBig = 2 * Math.PI * rBig;
-    const offsetBig = circBig * (1 - score / 100);
+    const offsetBig = circBig - (score / 100) * circBig;
 
     return (
         <>
@@ -104,7 +72,7 @@ export default function CVScoreBadge() {
                 <svg viewBox="0 0 80 80" className="badge-circle">
                     <circle className="score-bg" cx="40" cy="40" r={r} />
                     <circle className="score-fill" cx="40" cy="40" r={r}
-                        style={{ strokeDasharray: circumference, strokeDashoffset: offset }} />
+                        style={{ strokeDasharray: circumference, strokeDashoffset: offset, stroke: style.color }} />
                 </svg>
                 <div className="badge-score"><span>{score}</span>%</div>
             </div>
@@ -123,20 +91,19 @@ export default function CVScoreBadge() {
                                     <svg viewBox="0 0 120 120">
                                         <circle className="score-bg" cx="60" cy="60" r={rBig} />
                                         <circle className="score-fill" cx="60" cy="60" r={rBig}
-                                            style={{ strokeDasharray: circBig, strokeDashoffset: offsetBig }} />
+                                            style={{ strokeDasharray: circBig, strokeDashoffset: offsetBig, stroke: style.color }} />
                                     </svg>
                                     <div className="score-value-big"><span>{score}</span><span>%</span></div>
                                 </div>
-                                <span className={`score-label ${label.cls}`}>{label.text}</span>
+                                <span className={`score-label ${style.cls}`}>{style.text}</span>
                             </div>
                             <div className="score-breakdown">
-                                {breakdown.map(item => (
-                                    <div key={item.label} className="score-row">
-                                        <span className="score-row-label">{item.label}</span>
-                                        <div className="score-bar-track">
-                                            <div className="score-bar-fill" style={{ width: `${(item.score / item.max) * 100}%` }} />
+                                {criteria.map(c => (
+                                    <div key={c.key} className="score-item">
+                                        <div className={`score-item-icon ${c.done ? 'check' : 'miss'}`}>
+                                            {c.done ? '✓' : '✗'}
                                         </div>
-                                        <span className="score-row-val">{item.score}/{item.max}</span>
+                                        <span className={`score-item-text ${c.done ? 'done' : ''}`}>{c.label}</span>
                                     </div>
                                 ))}
                             </div>
