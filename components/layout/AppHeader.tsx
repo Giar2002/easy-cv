@@ -24,6 +24,27 @@ export default function AppHeader() {
         window.print();
     }
 
+    function handleExportJson() {
+        const state = useCVStore.getState();
+        const exportData = {
+            personal: state.personal,
+            experience: state.experience,
+            education: state.education,
+            skills: state.skills,
+            projects: state.projects,
+            certifications: state.certifications,
+            languages: state.languages,
+            settings: state.settings
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "cv-data.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }
+
     return (
         <>
             <header className="app-header">
@@ -59,6 +80,14 @@ export default function AppHeader() {
                                 <line x1="12" y1="15" x2="12" y2="3" />
                             </svg>
                             <span>Import Json</span>
+                        </button>
+                        <button className="btn btn-secondary" onClick={handleExportJson} title="Backup data CV">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            <span>Export Json</span>
                         </button>
                         <button id="btn-download-pdf" className="btn btn-primary" onClick={handleDownloadPDF}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

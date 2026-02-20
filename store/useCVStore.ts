@@ -20,7 +20,9 @@ const defaultSettings: CVSettings = {
     template: 'modern',
     showPhoto: true,
     colorScheme: '#6c63ff',
-    language: 'id'
+    language: 'id',
+    fontFamily: 'Inter, sans-serif',
+    fontSize: 12
 };
 
 interface CVStore extends CVData {

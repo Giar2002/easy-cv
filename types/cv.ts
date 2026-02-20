@@ -62,6 +62,8 @@ export interface CVSettings {
     showPhoto: boolean;
     colorScheme: string; // hex color e.g. "#6c63ff"
     language?: 'id' | 'en';
+    fontFamily?: string;
+    fontSize?: number | string;
 }
 
 export interface CVData {

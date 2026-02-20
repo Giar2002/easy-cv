@@ -48,9 +48,19 @@ export default function TemplateRenderer() {
     const component = templateMap[settings.template] || <GenericTemplate {...props} />;
 
     return (
-        <div id="cv-page" className={`cv-page template-${settings.template}`}
-            style={{ '--cv-accent': settings.colorScheme || '#6c63ff' } as React.CSSProperties}>
-            {component}
-        </div>
+        <>
+            <style>{`
+                #cv-page, #cv-page * {
+                    font-family: ${settings.fontFamily || 'Inter, sans-serif'} !important;
+                }
+            `}</style>
+            <div id="cv-page" className={`cv-page template-${settings.template}`}
+                style={{
+                    '--cv-accent': settings.colorScheme || '#6c63ff',
+                    fontSize: `${typeof settings.fontSize === 'number' ? settings.fontSize : 12}pt`
+                } as React.CSSProperties}>
+                {component}
+            </div>
+        </>
     );
 }

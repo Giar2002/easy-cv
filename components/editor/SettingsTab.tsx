@@ -224,6 +224,47 @@ export default function SettingsTab() {
                 </div>
             </div>
 
+            {/* Typography */}
+            <div className="settings-group">
+                <h3 className="settings-title">Tipografi</h3>
+                <div className="setting-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+                    <label className="setting-label">Jenis Font</label>
+                    <select
+                        className="form-input"
+                        value={settings.fontFamily || 'Inter, sans-serif'}
+                        onChange={e => setSettings({ fontFamily: e.target.value })}
+                        style={{ width: '100%' }}
+                    >
+                        <option value="Inter, sans-serif">Inter (Sans-Serif)</option>
+                        <option value="'Merriweather', serif">Merriweather (Serif)</option>
+                        <option value="'Roboto Mono', monospace">Roboto Mono (Monospace)</option>
+                        <option value="'Outfit', sans-serif">Outfit (Modern)</option>
+                    </select>
+                </div>
+                <div className="setting-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem', marginTop: '1rem' }}>
+                    <label className="setting-label">Ukuran Font</label>
+                    <select
+                        className="form-input"
+                        value={settings.fontSize || 12}
+                        onChange={e => {
+                            const val = parseInt(e.target.value);
+                            if (!isNaN(val)) setSettings({ fontSize: val });
+                        }}
+                        style={{ width: '100%' }}
+                    >
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12 (Standar / Normal)</option>
+                        <option value="14">14</option>
+                        <option value="16">16</option>
+                        <option value="18">18</option>
+                        <option value="24">24</option>
+                    </select>
+                </div>
+            </div>
+
             {/* Color Picker */}
             <div className="settings-group">
                 <h3 className="settings-title">Pilih Warna Tema</h3>
