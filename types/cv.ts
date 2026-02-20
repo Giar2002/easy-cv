@@ -61,6 +61,7 @@ export interface CVSettings {
     template: string;
     showPhoto: boolean;
     colorScheme: string; // hex color e.g. "#6c63ff"
+    language?: 'id' | 'en';
 }
 
 export interface CVData {

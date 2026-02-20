@@ -19,7 +19,8 @@ const defaultPersonal: PersonalInfo = {
 const defaultSettings: CVSettings = {
     template: 'modern',
     showPhoto: true,
-    colorScheme: '#6c63ff'
+    colorScheme: '#6c63ff',
+    language: 'id'
 };
 
 interface CVStore extends CVData {

@@ -1,8 +1,10 @@
 import { TemplateProps, nl2br, ContactInfo, SkillDots } from './shared';
+import { getTranslations } from '@/lib/i18n';
 
 export default function ClassicTemplate({ data }: TemplateProps) {
     const { personal, experience, education, skills, projects, certifications, languages, settings } = data;
     const show = settings.showPhoto;
+    const t = getTranslations(settings.language);
 
     return (
         <>
@@ -21,13 +23,13 @@ export default function ClassicTemplate({ data }: TemplateProps) {
             <div className="cv-body">
                 {personal.summary && personal.summary.trim() && (
                     <div className="cv-section">
-                        <div className="cv-section-title">Profil</div>
+                        <div className="cv-section-title">{t.profile}</div>
                         <div className="cv-summary">{personal.summary}</div>
                     </div>
                 )}
                 {experience.length > 0 && (
                     <div className="cv-section">
-                        <div className="cv-section-title">Pengalaman Kerja</div>
+                        <div className="cv-section-title">{t.experience}</div>
                         {experience.map(exp => (
                             <div key={exp.id} className="cv-entry">
                                 <div className="cv-entry-header">
@@ -42,7 +44,7 @@ export default function ClassicTemplate({ data }: TemplateProps) {
                 )}
                 {education.length > 0 && (
                     <div className="cv-section">
-                        <div className="cv-section-title">Pendidikan</div>
+                        <div className="cv-section-title">{t.education}</div>
                         {education.map(edu => (
                             <div key={edu.id} className="cv-entry">
                                 <div className="cv-entry-header">
@@ -57,7 +59,7 @@ export default function ClassicTemplate({ data }: TemplateProps) {
                 )}
                 {skills.length > 0 && (
                     <div className="cv-section">
-                        <div className="cv-section-title">Keahlian</div>
+                        <div className="cv-section-title">{t.skills}</div>
                         <div className="cv-skills-grid">
                             {skills.map(skill => (
                                 <SkillDots key={skill.id} name={skill.name || 'Skill'} level={skill.level} />
@@ -67,7 +69,7 @@ export default function ClassicTemplate({ data }: TemplateProps) {
                 )}
                 {projects.length > 0 && (
                     <div className="cv-section">
-                        <div className="cv-section-title">Proyek</div>
+                        <div className="cv-section-title">{t.projects}</div>
                         {projects.map(proj => (
                             <div key={proj.id} className="cv-entry">
                                 <div className="cv-entry-header">
@@ -76,14 +78,14 @@ export default function ClassicTemplate({ data }: TemplateProps) {
                                 </div>
                                 {proj.role && <div className="cv-entry-subtitle">{proj.role}</div>}
                                 {proj.description && <div className="cv-entry-desc">{nl2br(proj.description)}</div>}
-                                {proj.link && <div className="cv-entry-link"><a href={proj.link} target="_blank" rel="noopener noreferrer">🔗 {proj.link}</a></div>}
+                                {proj.link && <div className="cv-entry-link"><a href={proj.link} target="_blank" rel="noopener noreferrer">{proj.link}</a></div>}
                             </div>
                         ))}
                     </div>
                 )}
                 {certifications.length > 0 && (
                     <div className="cv-section">
-                        <div className="cv-section-title">Sertifikat</div>
+                        <div className="cv-section-title">{t.certifications}</div>
                         {certifications.map(cert => (
                             <div key={cert.id} className="cv-entry">
                                 <div className="cv-entry-header">
@@ -97,7 +99,7 @@ export default function ClassicTemplate({ data }: TemplateProps) {
                 )}
                 {languages.length > 0 && (
                     <div className="cv-section">
-                        <div className="cv-section-title">Bahasa</div>
+                        <div className="cv-section-title">{t.languages}</div>
                         <div className="cv-skills-grid">
                             {languages.map(lang => (
                                 <div key={lang.id} className="cv-skill-item">

@@ -1,9 +1,11 @@
 import { TemplateProps, nl2br } from './shared';
+import { getTranslations } from '@/lib/i18n';
 
 export default function CreativeTemplate({ data }: TemplateProps) {
     const { personal, experience, education, skills, projects, certifications, languages, settings } = data;
     const show = settings.showPhoto;
     const contacts = [personal.email, personal.phone, personal.location, personal.website].filter(Boolean);
+    const t = getTranslations(settings.language);
 
     return (
         <div style={{ display: 'flex', minHeight: '297mm' }}>
@@ -17,14 +19,14 @@ export default function CreativeTemplate({ data }: TemplateProps) {
 
                 {contacts.length > 0 && (
                     <div>
-                        <div className="cv-sidebar-section-title">Kontak</div>
+                        <div className="cv-sidebar-section-title">{t.contact}</div>
                         {contacts.map((c, i) => <div key={i} className="cv-sidebar-item">{c}</div>)}
                     </div>
                 )}
 
                 {skills.length > 0 && (
                     <div>
-                        <div className="cv-sidebar-section-title">Keahlian</div>
+                        <div className="cv-sidebar-section-title">{t.skills}</div>
                         {skills.map(skill => (
                             <div key={skill.id} className="cv-skill-bar-wrap">
                                 <div className="cv-skill-bar-label"><span>{skill.name}</span></div>
@@ -38,7 +40,7 @@ export default function CreativeTemplate({ data }: TemplateProps) {
 
                 {languages.length > 0 && (
                     <div>
-                        <div className="cv-sidebar-section-title">Bahasa</div>
+                        <div className="cv-sidebar-section-title">{t.languages}</div>
                         {languages.map(lang => (
                             <div key={lang.id} className="cv-sidebar-item">{lang.name} — {lang.level}</div>
                         ))}
@@ -50,13 +52,13 @@ export default function CreativeTemplate({ data }: TemplateProps) {
             <div className="cv-main">
                 {personal.summary && (
                     <div style={{ marginBottom: '1.25rem' }}>
-                        <div className="cv-section-title" style={{ marginBottom: '0.5rem' }}>Profil</div>
+                        <div className="cv-section-title" style={{ marginBottom: '0.5rem' }}>{t.profile}</div>
                         <div style={{ fontSize: '8.5pt', color: '#444', lineHeight: 1.6 }}>{personal.summary}</div>
                     </div>
                 )}
                 {experience.length > 0 && (
                     <div style={{ marginBottom: '1.25rem' }}>
-                        <div className="cv-section-title" style={{ marginBottom: '0.5rem' }}>Pengalaman</div>
+                        <div className="cv-section-title" style={{ marginBottom: '0.5rem' }}>{t.experience}</div>
                         {experience.map(exp => (
                             <div key={exp.id} className="cv-entry">
                                 <div className="cv-entry-header">
@@ -71,7 +73,7 @@ export default function CreativeTemplate({ data }: TemplateProps) {
                 )}
                 {education.length > 0 && (
                     <div style={{ marginBottom: '1.25rem' }}>
-                        <div className="cv-section-title" style={{ marginBottom: '0.5rem' }}>Pendidikan</div>
+                        <div className="cv-section-title" style={{ marginBottom: '0.5rem' }}>{t.education}</div>
                         {education.map(edu => (
                             <div key={edu.id} className="cv-entry">
                                 <div className="cv-entry-header">
@@ -86,7 +88,7 @@ export default function CreativeTemplate({ data }: TemplateProps) {
                 )}
                 {projects.length > 0 && (
                     <div style={{ marginBottom: '1.25rem' }}>
-                        <div className="cv-section-title" style={{ marginBottom: '0.5rem' }}>Proyek</div>
+                        <div className="cv-section-title" style={{ marginBottom: '0.5rem' }}>{t.projects}</div>
                         {projects.map(proj => (
                             <div key={proj.id} className="cv-entry">
                                 <div className="cv-entry-header">
@@ -95,14 +97,14 @@ export default function CreativeTemplate({ data }: TemplateProps) {
                                 </div>
                                 {proj.role && <div className="cv-entry-sub">{proj.role}</div>}
                                 {proj.description && <div className="cv-entry-desc">{nl2br(proj.description)}</div>}
-                                {proj.link && <div className="cv-entry-link"><a href={proj.link} target="_blank" rel="noopener noreferrer">🔗 {proj.link}</a></div>}
+                                {proj.link && <div className="cv-entry-link"><a href={proj.link} target="_blank" rel="noopener noreferrer">{proj.link}</a></div>}
                             </div>
                         ))}
                     </div>
                 )}
                 {certifications.length > 0 && (
                     <div>
-                        <div className="cv-section-title" style={{ marginBottom: '0.5rem' }}>Sertifikat</div>
+                        <div className="cv-section-title" style={{ marginBottom: '0.5rem' }}>{t.certifications}</div>
                         {certifications.map(cert => (
                             <div key={cert.id} className="cv-entry">
                                 <div className="cv-entry-header">

@@ -6,7 +6,13 @@ import AIImportModal from '@/components/modals/AIImportModal';
 
 export default function AppHeader() {
     const resetAll = useCVStore(s => s.resetAll);
+    const settings = useCVStore(s => s.settings);
+    const setSettings = useCVStore(s => s.setSettings);
     const [showImportModal, setShowImportModal] = useState(false);
+
+    function toggleLanguage() {
+        setSettings({ language: settings.language === 'en' ? 'id' : 'en' });
+    }
 
     function handleReset() {
         if (confirm('Hapus semua data CV? Tindakan ini tidak bisa dibatalkan.')) {
@@ -35,6 +41,10 @@ export default function AppHeader() {
                         <h1>CV Builder</h1>
                     </a>
                     <div className="header-actions">
+                        <button className="btn btn-ghost" onClick={toggleLanguage} title={settings.language === 'en' ? 'Switch to Indonesian' : 'Ganti ke Bahasa Inggris'}>
+                            <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>{settings.language === 'en' ? '🇬🇧' : '🇮🇩'}</span>
+                            <span>{settings.language === 'en' ? 'EN' : 'ID'}</span>
+                        </button>
                         <button className="btn btn-ghost" onClick={handleReset} title="Hapus Semua Data">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="3 6 5 6 21 6" />
