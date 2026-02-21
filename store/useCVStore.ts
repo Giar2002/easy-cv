@@ -20,9 +20,11 @@ const defaultSettings: CVSettings = {
     template: 'modern',
     showPhoto: true,
     colorScheme: '#6c63ff',
-    language: 'id',
+    language: 'en',
     fontFamily: 'Inter, sans-serif',
-    fontSize: 12
+    fontSize: 12,
+    theme: 'light',
+    hasCompletedOnboarding: false
 };
 
 interface CVStore extends CVData {
@@ -54,6 +56,7 @@ interface CVStore extends CVData {
     removeLanguage: (id: string) => void;
     // Settings
     setSettings: (data: Partial<CVSettings>) => void;
+    completeOnboarding: () => void;
     // Reset
     resetAll: () => void;
     // Import
@@ -125,6 +128,7 @@ export const useCVStore = create<CVStore>()(
             removeLanguage: (id) => set(s => ({ languages: s.languages.filter(e => e.id !== id) })),
 
             setSettings: (data) => set(s => ({ settings: { ...s.settings, ...data } })),
+            completeOnboarding: () => set(s => ({ settings: { ...s.settings, hasCompletedOnboarding: true } })),
 
             resetAll: () => set({
                 personal: defaultPersonal,

@@ -8,14 +8,14 @@ export default function CreativeTemplate({ data }: TemplateProps) {
     const t = getTranslations(settings.language);
 
     return (
-        <div style={{ display: 'flex', minHeight: '297mm' }}>
+        <div style={{ display: 'flex', minHeight: '297mm', width: '100%' }}>
             {/* Sidebar */}
             <div className="cv-sidebar">
                 {show && personal.photo && (
                     <img src={personal.photo} className="cv-photo" alt="Foto Profil" />
                 )}
-                {personal.fullName && <div className="cv-name">{personal.fullName}</div>}
-                {personal.jobTitle && <div className="cv-title">{personal.jobTitle}</div>}
+                {personal.fullName && <div className="cv-name">{personal.fullName || t.defaultName}</div>}
+                {personal.jobTitle && <div className="cv-title">{personal.jobTitle || t.defaultRole}</div>}
 
                 {contacts.length > 0 && (
                     <div>
@@ -62,7 +62,7 @@ export default function CreativeTemplate({ data }: TemplateProps) {
                         {experience.map(exp => (
                             <div key={exp.id} className="cv-entry">
                                 <div className="cv-entry-header">
-                                    <span className="cv-entry-title">{exp.title}</span>
+                                    <span className="cv-entry-title">{exp.title || t.defaultPosition}</span>
                                     <span className="cv-entry-date">{exp.startDate}{exp.endDate && ` — ${exp.endDate}`}</span>
                                 </div>
                                 {exp.company && <div className="cv-entry-sub">{exp.company}</div>}
@@ -77,7 +77,7 @@ export default function CreativeTemplate({ data }: TemplateProps) {
                         {education.map(edu => (
                             <div key={edu.id} className="cv-entry">
                                 <div className="cv-entry-header">
-                                    <span className="cv-entry-title">{edu.school}</span>
+                                    <span className="cv-entry-title">{edu.school || t.defaultInstitution}</span>
                                     <span className="cv-entry-date">{edu.startDate}{edu.endDate && ` — ${edu.endDate}`}</span>
                                 </div>
                                 {edu.degree && <div className="cv-entry-sub">{edu.degree}</div>}

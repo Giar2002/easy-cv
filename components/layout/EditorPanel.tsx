@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useCVStore } from '@/store/useCVStore';
+import { getTranslations } from '@/lib/i18n';
 import PersonalTab from '@/components/editor/PersonalTab';
 import ExperienceTab from '@/components/editor/ExperienceTab';
 import EducationTab from '@/components/editor/EducationTab';
@@ -67,6 +68,18 @@ export default function EditorPanel() {
     const [activeTab, setActiveTab] = useState('personal');
     const tabNavRef = useRef<HTMLElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const language = useCVStore(s => s.settings.language);
+    const t = getTranslations(language);
+
+    const tabTranslationKeys: Record<string, keyof typeof t> = {
+        personal: 'profile',
+        experience: 'experience',
+        education: 'education',
+        skills: 'skills',
+        projects: 'projects',
+        others: 'others',
+        settings: 'settings',
+    };
 
     useEffect(() => {
         const nav = tabNavRef.current;
@@ -120,7 +133,7 @@ export default function EditorPanel() {
                             onClick={(e) => switchTab(tab.id, e)}
                         >
                             {tab.icon}
-                            <span>{tab.label}</span>
+                            <span>{t[tabTranslationKeys[tab.id]] || tab.label}</span>
                         </button>
                     ))}
                 </nav>

@@ -41,7 +41,7 @@ export default function TemplateRenderer() {
         'ats-corporate': <ATSTemplate {...props} />,
         creative: <CreativeTemplate {...props} />,
         'sidebar-dark': <CreativeTemplate {...props} />,
-        designer: <CreativeTemplate {...props} />,
+        designer: <ModernTemplate {...props} />,
         executive: <ExecutiveTemplate {...props} />,
     };
 

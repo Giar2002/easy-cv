@@ -13,11 +13,58 @@
 }
 
 :root {
+    /* Light Mode Palette */
+    --bg-primary: #f2f2f7;
+    /* slightly darker to reduce glare */
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --bg-input: #f0f0f5;
+    --bg-hover: #e8e8f0;
+    --bg-header-hsl: 255, 255, 255;
+    --glass-bg: rgba(0, 0, 0, 0.03);
+    --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+    --border: #e0e0e8;
+    --border-focus: #6c63ff;
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a4a6a;
+    --text-muted: #7a7a9a;
+    --accent: #6c63ff;
+    --accent-hover: #5a52e0;
+    --accent-glow: rgba(108, 99, 255, 0.15);
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+    --success: #10b981;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12);
+    --transition: 0.2s ease;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    /* CV Preview colors (Always light) */
+    --cv-bg: #ffffff;
+    --cv-text: #1a1a2e;
+    --cv-text-secondary: #4a4a6a;
+    --cv-text-muted: #7a7a9a;
+    --cv-accent: #6c63ff;
+    --cv-border: #e8e8f0;
+    --cv-section-bg: #f8f8fc;
+}
+
+[data-theme='dark'] {
+    /* Dark Mode Palette (Original) */
     --bg-primary: #0f0f14;
     --bg-secondary: #16161e;
     --bg-card: #1c1c27;
     --bg-input: #22222f;
     --bg-hover: #2a2a3a;
+    --bg-header-hsl: 15, 15, 20;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --scrollbar-thumb: rgba(255, 255, 255, 0.15);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.25);
     --border: #2e2e40;
     --border-focus: #6c63ff;
     --text-primary: #e8e8f0;
@@ -29,23 +76,9 @@
     --danger: #ff4d6a;
     --danger-hover: #ff6680;
     --success: #34d399;
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
     --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
-    --transition: 0.2s ease;
-    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-
-    /* CV Preview colors */
-    --cv-bg: #ffffff;
-    --cv-text: #1a1a2e;
-    --cv-text-secondary: #4a4a6a;
-    --cv-text-muted: #7a7a9a;
-    --cv-accent: #6c63ff;
-    --cv-border: #e8e8f0;
-    --cv-section-bg: #f8f8fc;
 }
 
 html {
@@ -66,7 +99,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(15, 15, 20, 0.85);
+    background: rgba(var(--bg-header-hsl), 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
@@ -223,12 +256,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--scrollbar-thumb);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--scrollbar-thumb-hover);
 }
 
 /* React Quill Custom Theme overrides */
@@ -238,7 +271,7 @@ body {
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid var(--border-color);
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--glass-bg);
     transition: all 0.2s ease;
 }
 
@@ -3923,7 +3956,7 @@ select.form-group,
     width: 100%;
     z-index: 1000;
     backdrop-filter: blur(10px);
-    background: rgba(15, 15, 20, 0.8);
+    background: rgba(var(--bg-header-hsl), 0.8);
     border-bottom: 1px solid var(--border);
 }
 
@@ -4767,7 +4800,7 @@ select.form-group,
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1000;
+    z-index: 99995;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5440,7 +5473,7 @@ select.form-group,
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
+    z-index: 99999;
 }
 
 .modal-content {
@@ -5454,4 +5487,5 @@ select.form-group,
     position: relative;
     max-height: 90vh;
     overflow-y: auto;
+    z-index: 99999;
 }

@@ -1,16 +1,18 @@
 'use client';
 
 import { useCVStore } from '@/store/useCVStore';
+import { getTranslations } from '@/lib/i18n';
 import { Education } from '@/types/cv';
 import { X, Plus, GripVertical } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-function SortableEntryCard({ edu, onUpdate, onRemove }: {
+function SortableEntryCard({ edu, onUpdate, onRemove, t }: {
     edu: Education;
     onUpdate: (data: Partial<Education>) => void;
     onRemove: () => void;
+    t: ReturnType<typeof getTranslations>;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: edu.id });
 
@@ -29,34 +31,34 @@ function SortableEntryCard({ edu, onUpdate, onRemove }: {
                     <div {...attributes} {...listeners} style={{ cursor: 'grab', display: 'flex', alignItems: 'center', color: '#9ca3af' }}>
                         <GripVertical size={16} />
                     </div>
-                    <span className="entry-number">{edu.school || 'Pendidikan Baru'}</span>
+                    <span className="entry-number">{edu.school || t.newEdu}</span>
                 </div>
                 <button className="btn-remove" onClick={onRemove}><X size={14} /></button>
             </div>
             <div className="entry-fields">
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                    <label>Institusi</label>
-                    <input type="text" placeholder="contoh: Universitas Indonesia" value={edu.school}
+                    <label>{t.school}</label>
+                    <input type="text" placeholder={`${t.example} Universitas Indonesia`} value={edu.school}
                         onChange={e => onUpdate({ school: e.target.value })} />
                 </div>
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                    <label>Gelar / Jurusan</label>
-                    <input type="text" placeholder="contoh: S1 Teknik Informatika" value={edu.degree}
+                    <label>{t.degree}</label>
+                    <input type="text" placeholder={`${t.example} S1 Teknik Informatika`} value={edu.degree}
                         onChange={e => onUpdate({ degree: e.target.value })} />
                 </div>
                 <div className="form-group">
-                    <label>Mulai</label>
+                    <label>{t.startDate}</label>
                     <input type="text" placeholder="2018" value={edu.startDate}
                         onChange={e => onUpdate({ startDate: e.target.value })} />
                 </div>
                 <div className="form-group">
-                    <label>Selesai</label>
+                    <label>{t.endDate}</label>
                     <input type="text" placeholder="2022" value={edu.endDate}
                         onChange={e => onUpdate({ endDate: e.target.value })} />
                 </div>
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                    <label>Deskripsi</label>
-                    <textarea rows={2} placeholder="IPK, penghargaan, kegiatan..." value={edu.description}
+                    <label>{t.description} {t.optional}</label>
+                    <textarea rows={2} placeholder={t.eduDescPlaceholder} value={edu.description}
                         onChange={e => onUpdate({ description: e.target.value })} />
                 </div>
             </div>
@@ -70,6 +72,8 @@ export default function EducationTab() {
     const updateEducation = useCVStore(s => s.updateEducation);
     const removeEducation = useCVStore(s => s.removeEducation);
     const reorderItem = useCVStore(s => s.reorderItem);
+    const language = useCVStore(s => s.settings.language);
+    const t = getTranslations(language);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -88,8 +92,8 @@ export default function EducationTab() {
     return (
         <div>
             <div className="section-header">
-                <h2>Pendidikan</h2>
-                <p className="section-desc">Tambahkan riwayat pendidikan Anda</p>
+                <h2>{t.eduTitle}</h2>
+                <p className="section-desc">{t.eduDesc}</p>
             </div>
 
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -98,14 +102,14 @@ export default function EducationTab() {
                         {education.map(edu => (
                             <SortableEntryCard key={edu.id} edu={edu}
                                 onUpdate={data => updateEducation(edu.id, data)}
-                                onRemove={() => removeEducation(edu.id)} />
+                                onRemove={() => removeEducation(edu.id)} t={t} />
                         ))}
                     </div>
                 </SortableContext>
             </DndContext>
 
             <button className="btn-add" onClick={addEducation} style={{ marginTop: '1rem' }}>
-                <Plus size={16} /> Tambah Pendidikan
+                <Plus size={16} /> {t.addEdu}
             </button>
         </div>
     );

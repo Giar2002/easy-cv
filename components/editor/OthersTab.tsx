@@ -1,6 +1,7 @@
 'use client';
 
 import { useCVStore } from '@/store/useCVStore';
+import { getTranslations } from '@/lib/i18n';
 import { Certification, Language } from '@/types/cv';
 import { X, Plus, GripVertical } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
@@ -9,10 +10,11 @@ import { CSS } from '@dnd-kit/utilities';
 
 const LANGUAGE_LEVELS: Language['level'][] = ['Native', 'Fluent', 'Professional', 'Conversational', 'Basic'];
 
-function SortableCertCard({ cert, onUpdate, onRemove }: {
+function SortableCertCard({ cert, onUpdate, onRemove, t }: {
     cert: Certification;
     onUpdate: (data: Partial<Certification>) => void;
     onRemove: () => void;
+    t: ReturnType<typeof getTranslations>;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: cert.id });
     const style = {
@@ -30,28 +32,28 @@ function SortableCertCard({ cert, onUpdate, onRemove }: {
                     <div {...attributes} {...listeners} style={{ cursor: 'grab', display: 'flex', alignItems: 'center', color: '#9ca3af' }}>
                         <GripVertical size={16} />
                     </div>
-                    <span className="entry-number">{cert.name || 'Sertifikat Baru'}</span>
+                    <span className="entry-number">{cert.name || t.newCert}</span>
                 </div>
                 <button className="btn-remove" onClick={onRemove}><X size={14} /></button>
             </div>
             <div className="entry-fields">
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                    <label>Nama Sertifikat</label>
-                    <input type="text" placeholder="contoh: AWS Certified" value={cert.name}
+                    <label>{t.certName}</label>
+                    <input type="text" placeholder={`${t.example} AWS Certified`} value={cert.name}
                         onChange={e => onUpdate({ name: e.target.value })} />
                 </div>
                 <div className="form-group">
-                    <label>Penerbit</label>
-                    <input type="text" placeholder="contoh: Amazon" value={cert.issuer}
+                    <label>{t.issuer}</label>
+                    <input type="text" placeholder={`${t.example} Amazon`} value={cert.issuer}
                         onChange={e => onUpdate({ issuer: e.target.value })} />
                 </div>
                 <div className="form-group">
-                    <label>Tanggal</label>
+                    <label>{t.date}</label>
                     <input type="text" placeholder="2023" value={cert.date}
                         onChange={e => onUpdate({ date: e.target.value })} />
                 </div>
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                    <label>Link (Opsional)</label>
+                    <label>{t.link} {t.optional}</label>
                     <input type="text" placeholder="Credential URL" value={cert.link}
                         onChange={e => onUpdate({ link: e.target.value })} />
                 </div>
@@ -60,10 +62,11 @@ function SortableCertCard({ cert, onUpdate, onRemove }: {
     );
 }
 
-function SortableLangCard({ lang, onUpdate, onRemove }: {
+function SortableLangCard({ lang, onUpdate, onRemove, t }: {
     lang: Language;
     onUpdate: (data: Partial<Language>) => void;
     onRemove: () => void;
+    t: ReturnType<typeof getTranslations>;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lang.id });
     const style = {
@@ -81,18 +84,18 @@ function SortableLangCard({ lang, onUpdate, onRemove }: {
                     <div {...attributes} {...listeners} style={{ cursor: 'grab', display: 'flex', alignItems: 'center', color: '#9ca3af' }}>
                         <GripVertical size={16} />
                     </div>
-                    <span className="entry-number">{lang.name || 'Bahasa Baru'}</span>
+                    <span className="entry-number">{lang.name || t.newLanguage}</span>
                 </div>
                 <button className="btn-remove" onClick={onRemove}><X size={14} /></button>
             </div>
             <div className="entry-fields">
                 <div className="form-group" style={{ flex: 2 }}>
-                    <label>Bahasa</label>
-                    <input type="text" placeholder="contoh: Inggris" value={lang.name}
+                    <label>{t.languageName}</label>
+                    <input type="text" placeholder={`${t.example} English`} value={lang.name}
                         onChange={e => onUpdate({ name: e.target.value })} />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                    <label>Level</label>
+                    <label>{t.skillLevel}</label>
                     <select value={lang.level}
                         onChange={e => onUpdate({ level: e.target.value as Language['level'] })}>
                         {LANGUAGE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
@@ -114,6 +117,8 @@ export default function OthersTab() {
     const updateLanguage = useCVStore(s => s.updateLanguage);
     const removeLanguage = useCVStore(s => s.removeLanguage);
     const reorderItem = useCVStore(s => s.reorderItem);
+    const appLanguage = useCVStore(s => s.settings.language);
+    const t = getTranslations(appLanguage);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -141,40 +146,40 @@ export default function OthersTab() {
     return (
         <div>
             <div className="section-header">
-                <h2>Sertifikat & Bahasa</h2>
-                <p className="section-desc">Kualifikasi tambahan yang mendukung</p>
+                <h2>{t.othersTitle}</h2>
+                <p className="section-desc">{t.othersDesc}</p>
             </div>
 
-            <h3 className="subsection-title">Sertifikat / Lisensi</h3>
+            <h3 className="subsection-title">{t.certTitleSection}</h3>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCertDragEnd}>
                 <SortableContext items={certifications.map(c => c.id)} strategy={verticalListSortingStrategy}>
                     <div className="entries-list">
                         {certifications.map((cert) => (
                             <SortableCertCard key={cert.id} cert={cert}
                                 onUpdate={data => updateCertification(cert.id, data)}
-                                onRemove={() => removeCertification(cert.id)} />
+                                onRemove={() => removeCertification(cert.id)} t={t} />
                         ))}
                     </div>
                 </SortableContext>
             </DndContext>
             <button className="btn-add" onClick={addCertification} style={{ marginTop: '1rem' }}>
-                <Plus size={16} /> Tambah Sertifikat
+                <Plus size={16} /> {t.addCert}
             </button>
 
-            <h3 className="subsection-title" style={{ marginTop: '2rem' }}>Bahasa</h3>
+            <h3 className="subsection-title" style={{ marginTop: '2rem' }}>{t.langTitleSection}</h3>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleLangDragEnd}>
                 <SortableContext items={languages.map(l => l.id)} strategy={verticalListSortingStrategy}>
                     <div className="entries-list">
                         {languages.map((lang) => (
                             <SortableLangCard key={lang.id} lang={lang}
                                 onUpdate={data => updateLanguage(lang.id, data)}
-                                onRemove={() => removeLanguage(lang.id)} />
+                                onRemove={() => removeLanguage(lang.id)} t={t} />
                         ))}
                     </div>
                 </SortableContext>
             </DndContext>
             <button className="btn-add" onClick={addLanguage} style={{ marginTop: '1rem' }}>
-                <Plus size={16} /> Tambah Bahasa
+                <Plus size={16} /> {t.addLanguage}
             </button>
         </div>
     );

@@ -64,6 +64,8 @@ export interface CVSettings {
     language?: 'id' | 'en';
     fontFamily?: string;
     fontSize?: number | string;
+    theme?: 'light' | 'dark';
+    hasCompletedOnboarding?: boolean;
 }
 
 export interface CVData {

@@ -227,14 +227,15 @@ export default function TemplateThumbnail({ tpl }: { tpl: TemplateConfig }) {
         case 'designer':
             return (
                 <>
-                    <div className="tpl-mini-split">
-                        <div className="tpl-mini-sidebar accent"></div>
-                        <div className="tpl-mini-right">
-                            <div className="tpl-mini-line w70 bold"></div>
-                            <div className="tpl-mini-line w55"></div>
-                            <div className="tpl-mini-line w90"></div>
+                    <div className="tpl-mini-header" style={{ borderLeft: '3px solid var(--accent)', paddingLeft: '4px' }}>
+                        <div>
+                            <div className="tpl-mini-line w60 bold"></div>
+                            <div className="tpl-mini-line w40 accent"></div>
                         </div>
                     </div>
+                    <div className="tpl-mini-line w90" style={{ marginTop: '4px' }}></div>
+                    <div className="tpl-mini-line w80"></div>
+                    <div className="tpl-mini-line w85"></div>
                 </>
             );
         case 'banking':

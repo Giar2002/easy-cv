@@ -10,7 +10,7 @@ export default function ResetModal({ onClose }: { onClose: () => void }) {
     const texts = {
         successToast: isEn ? 'All CV data successfully reset!' : 'Semua data CV berhasil direset!',
         title: isEn ? 'Reset All Data?' : 'Reset Semua Data?',
-        description: isEn 
+        description: isEn
             ? 'This action will permanently delete all your profile, experience, education, skills, and settings data back to the initial empty state. This action <b>cannot be undone</b>.'
             : 'Tindakan ini akan menghapus permanen seluruh data profil, pengalaman, pendidikan, keahlian, dan pengaturan Anda ke keadaan kosong awal. Tindakan ini <b>tidak bisa dibatalkan</b>.',
         cancel: isEn ? 'Cancel' : 'Batal',
@@ -21,9 +21,9 @@ export default function ResetModal({ onClose }: { onClose: () => void }) {
         resetAll();
         toast.success(texts.successToast, {
             style: {
-                background: '#333',
-                color: '#fff',
-                border: '1px solid #444',
+                background: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border)',
             }
         });
         onClose();
@@ -41,8 +41,8 @@ export default function ResetModal({ onClose }: { onClose: () => void }) {
                             <line x1="14" y1="11" x2="14" y2="17" />
                         </svg>
                     </div>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#fff', marginBottom: '0.5rem' }}>{texts.title}</h2>
-                    <p style={{ fontSize: '0.9rem', color: '#9ca3af', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: texts.description }} />
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>{texts.title}</h2>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-color)', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: texts.description }} />
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>

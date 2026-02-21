@@ -1,6 +1,7 @@
 'use client';
 
 import { useCVStore } from '@/store/useCVStore';
+import { getTranslations } from '@/lib/i18n';
 import { Experience } from '@/types/cv';
 import RichTextInput from './RichTextInput';
 import AIAssistantButton from './AIAssistantButton';
@@ -9,10 +10,11 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-function SortableEntryCard({ exp, onUpdate, onRemove }: {
+function SortableEntryCard({ exp, onUpdate, onRemove, t }: {
     exp: Experience;
     onUpdate: (data: Partial<Experience>) => void;
     onRemove: () => void;
+    t: ReturnType<typeof getTranslations>;
 }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: exp.id });
 
@@ -31,40 +33,40 @@ function SortableEntryCard({ exp, onUpdate, onRemove }: {
                     <div {...attributes} {...listeners} style={{ cursor: 'grab', display: 'flex', alignItems: 'center', color: '#9ca3af' }}>
                         <GripVertical size={16} />
                     </div>
-                    <span className="entry-number">{exp.title || 'Pengalaman Baru'}</span>
+                    <span className="entry-number">{exp.title || t.newExp}</span>
                 </div>
                 <button className="btn-remove" onClick={onRemove}><X size={14} /></button>
             </div>
             <div className="entry-fields">
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                    <label>Posisi / Jabatan</label>
-                    <input type="text" placeholder="contoh: Software Engineer" value={exp.title}
+                    <label>{t.position}</label>
+                    <input type="text" placeholder={`${t.example} Software Engineer`} value={exp.title}
                         onChange={e => onUpdate({ title: e.target.value })} />
                 </div>
                 <div className="form-group">
-                    <label>Perusahaan</label>
+                    <label>{t.company}</label>
                     <input type="text" placeholder="PT Teknologi Indonesia" value={exp.company}
                         onChange={e => onUpdate({ company: e.target.value })} />
                 </div>
                 <div className="form-group">
-                    <label>Mulai</label>
+                    <label>{t.startDate}</label>
                     <input type="text" placeholder="Jan 2022" value={exp.startDate}
                         onChange={e => onUpdate({ startDate: e.target.value })} />
                 </div>
                 <div className="form-group">
-                    <label>Selesai</label>
-                    <input type="text" placeholder="Sekarang" value={exp.endDate}
+                    <label>{t.endDate}</label>
+                    <input type="text" placeholder={t.present} value={exp.endDate}
                         onChange={e => onUpdate({ endDate: e.target.value })} />
                 </div>
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                     <label style={{ display: 'flex', alignItems: 'center' }}>
-                        Deskripsi
+                        {t.description}
                         <AIAssistantButton value={exp.description} onApply={val => onUpdate({ description: val })} />
                     </label>
                     <RichTextInput
                         value={exp.description}
                         onChange={val => onUpdate({ description: val })}
-                        placeholder="Jelaskan tanggung jawab dan pencapaian..."
+                        placeholder={t.expDescPlaceholder}
                     />
                 </div>
             </div>
@@ -78,6 +80,8 @@ export default function ExperienceTab() {
     const updateExperience = useCVStore(s => s.updateExperience);
     const removeExperience = useCVStore(s => s.removeExperience);
     const reorderItem = useCVStore(s => s.reorderItem);
+    const language = useCVStore(s => s.settings.language);
+    const t = getTranslations(language);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -96,8 +100,8 @@ export default function ExperienceTab() {
     return (
         <div>
             <div className="section-header">
-                <h2>Pengalaman Kerja</h2>
-                <p className="section-desc">Tambahkan riwayat pekerjaan Anda</p>
+                <h2>{t.expTitle}</h2>
+                <p className="section-desc">{t.expDesc}</p>
             </div>
 
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -106,14 +110,14 @@ export default function ExperienceTab() {
                         {experience.map(exp => (
                             <SortableEntryCard key={exp.id} exp={exp}
                                 onUpdate={data => updateExperience(exp.id, data)}
-                                onRemove={() => removeExperience(exp.id)} />
+                                onRemove={() => removeExperience(exp.id)} t={t} />
                         ))}
                     </div>
                 </SortableContext>
             </DndContext>
 
             <button className="btn-add" onClick={addExperience} style={{ marginTop: '1rem' }}>
-                <Plus size={16} /> Tambah Pengalaman
+                <Plus size={16} /> {t.addExp}
             </button>
         </div>
     );

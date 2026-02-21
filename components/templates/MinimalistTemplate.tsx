@@ -15,8 +15,8 @@ export default function MinimalistTemplate({ data }: TemplateProps) {
                     </div>
                 )}
                 <div>
-                    <div className="cv-name">{personal.fullName || 'Nama Lengkap Anda'}</div>
-                    <div className="cv-title">{personal.jobTitle || 'Jabatan / Profesi'}</div>
+                    <div className="cv-name">{personal.fullName || t.defaultName}</div>
+                    <div className="cv-title">{personal.jobTitle || t.defaultRole}</div>
                     <ContactInfo personal={personal} />
                 </div>
             </div>
@@ -34,7 +34,7 @@ export default function MinimalistTemplate({ data }: TemplateProps) {
                         {experience.map(exp => (
                             <div key={exp.id} className="cv-entry">
                                 <div className="cv-entry-header">
-                                    <span className="cv-entry-title">{exp.title || 'Posisi'}</span>
+                                    <span className="cv-entry-title">{exp.title || t.defaultPosition}</span>
                                     <span className="cv-entry-date">{exp.startDate}{exp.startDate && exp.endDate ? ' — ' : ''}{exp.endDate}</span>
                                 </div>
                                 {exp.company && <div className="cv-entry-subtitle">{exp.company}</div>}
@@ -49,7 +49,7 @@ export default function MinimalistTemplate({ data }: TemplateProps) {
                         {education.map(edu => (
                             <div key={edu.id} className="cv-entry">
                                 <div className="cv-entry-header">
-                                    <span className="cv-entry-title">{edu.school || 'Institusi'}</span>
+                                    <span className="cv-entry-title">{edu.school || t.defaultInstitution}</span>
                                     <span className="cv-entry-date">{edu.startDate}{edu.startDate && edu.endDate ? ' — ' : ''}{edu.endDate}</span>
                                 </div>
                                 {edu.degree && <div className="cv-entry-subtitle">{edu.degree}</div>}
@@ -63,7 +63,7 @@ export default function MinimalistTemplate({ data }: TemplateProps) {
                         <div className="cv-section-title">{t.skills}</div>
                         <div className="cv-skills-grid">
                             {skills.map(skill => (
-                                <SkillDots key={skill.id} name={skill.name || 'Skill'} level={skill.level} />
+                                <SkillDots key={skill.id} name={skill.name || t.defaultSkill} level={skill.level} />
                             ))}
                         </div>
                     </div>

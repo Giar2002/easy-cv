@@ -9,8 +9,8 @@ export default function ATSTemplate({ data }: TemplateProps) {
     return (
         <>
             <div className="cv-header">
-                {personal.fullName && <div className="cv-name">{personal.fullName}</div>}
-                {personal.jobTitle && <div className="cv-title">{personal.jobTitle}</div>}
+                <div className="cv-name">{personal.fullName || t.defaultName}</div>
+                <div className="cv-title">{personal.jobTitle || t.defaultRole}</div>
                 {contacts.length > 0 && <div className="cv-contact">{contacts.map((c, i) => <span key={i}>{c}</span>)}</div>}
             </div>
             <div className="cv-divider" />
@@ -35,7 +35,7 @@ export default function ATSTemplate({ data }: TemplateProps) {
                         {experience.map(exp => (
                             <div key={exp.id} className="cv-entry">
                                 <div className="cv-entry-header">
-                                    <span className="cv-entry-title">{exp.title}{exp.company ? ` | ${exp.company}` : ''}</span>
+                                    <span className="cv-entry-title">{exp.title || t.defaultPosition}{exp.company ? ` | ${exp.company}` : ''}</span>
                                     <span className="cv-entry-date">{exp.startDate}{exp.endDate && ` — ${exp.endDate}`}</span>
                                 </div>
                                 {exp.description && exp.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: exp.description }} />}
@@ -49,7 +49,7 @@ export default function ATSTemplate({ data }: TemplateProps) {
                         {education.map(edu => (
                             <div key={edu.id} className="cv-entry">
                                 <div className="cv-entry-header">
-                                    <span className="cv-entry-title">{edu.degree}{edu.school ? `, ${edu.school}` : ''}</span>
+                                    <span className="cv-entry-title">{edu.school || t.defaultInstitution}{edu.degree ? `, ${edu.degree}` : ''}</span>
                                     <span className="cv-entry-date">{edu.startDate}{edu.endDate && ` — ${edu.endDate}`}</span>
                                 </div>
                                 {edu.description && edu.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: edu.description }} />}

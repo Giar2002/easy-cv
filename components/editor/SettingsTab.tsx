@@ -6,6 +6,7 @@ import { TEMPLATES, TEMPLATE_CATEGORIES } from '@/lib/templates';
 import { TemplateCategory } from '@/types/cv';
 import { useState } from 'react';
 import TemplateThumbnail from './TemplateThumbnails';
+import { getTranslations } from '@/lib/i18n';
 
 // --- HSV helpers ---
 function hsvToRgb(h: number, s: number, v: number): [number, number, number] {
@@ -196,6 +197,8 @@ function ColorPicker() {
 export default function SettingsTab() {
     const settings = useCVStore(s => s.settings);
     const setSettings = useCVStore(s => s.setSettings);
+    const language = useCVStore(s => s.settings.language);
+    const t = getTranslations(language);
     const [activeCategory, setActiveCategory] = useState<TemplateCategory>('all');
 
     const categories = Object.entries(TEMPLATE_CATEGORIES) as [TemplateCategory, { name: string; icon: string }][];
@@ -208,16 +211,16 @@ export default function SettingsTab() {
     return (
         <div>
             <div className="section-header">
-                <h2>Pengaturan CV</h2>
-                <p className="section-desc">Pilih template dan atur tampilan CV</p>
+                <h2>{t.settingsTitle}</h2>
+                <p className="section-desc">{t.settingsDesc}</p>
             </div>
 
             {/* Photo Toggle */}
             <div className="settings-group">
                 <div className="setting-item">
                     <div className="setting-info">
-                        <span className="setting-label">Tampilkan Foto</span>
-                        <span className="setting-desc">Tampilkan foto profil di CV</span>
+                        <span className="setting-label">{t.showPhoto}</span>
+                        <span className="setting-desc">{t.showPhotoDesc}</span>
                     </div>
                     <label className="toggle-switch">
                         <input type="checkbox" checked={settings.showPhoto}
@@ -229,9 +232,9 @@ export default function SettingsTab() {
 
             {/* Typography */}
             <div className="settings-group">
-                <h3 className="settings-title">Tipografi</h3>
+                <h3 className="settings-title">{t.typography}</h3>
                 <div className="setting-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
-                    <label className="setting-label">Jenis Font</label>
+                    <label className="setting-label">{t.fontFamily}</label>
                     <select
                         className="form-input"
                         value={settings.fontFamily || 'Inter, sans-serif'}
@@ -245,7 +248,7 @@ export default function SettingsTab() {
                     </select>
                 </div>
                 <div className="setting-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem', marginTop: '1rem' }}>
-                    <label className="setting-label">Ukuran Font</label>
+                    <label className="setting-label">{t.fontSize}</label>
                     <select
                         className="form-input"
                         value={settings.fontSize || 12}
@@ -259,7 +262,7 @@ export default function SettingsTab() {
                         <option value="9">9</option>
                         <option value="10">10</option>
                         <option value="11">11</option>
-                        <option value="12">12 (Standar / Normal)</option>
+                        <option value="12">12 ({t.standard})</option>
                         <option value="14">14</option>
                         <option value="16">16</option>
                         <option value="18">18</option>
@@ -270,13 +273,13 @@ export default function SettingsTab() {
 
             {/* Color Picker */}
             <div className="settings-group">
-                <h3 className="settings-title">Pilih Warna Tema</h3>
+                <h3 className="settings-title">{t.themeColor}</h3>
                 <ColorPicker />
             </div>
 
             {/* Template Selector */}
             <div className="settings-group">
-                <h3 className="settings-title">Filter Berdasarkan Kategori</h3>
+                <h3 className="settings-title">{t.filterCategory}</h3>
                 <div className="template-category-filter">
                     {categories.map(([key, cat]) => (
                         <button key={key} className={`category-btn ${activeCategory === key ? 'active' : ''}`}
@@ -285,7 +288,7 @@ export default function SettingsTab() {
                         </button>
                     ))}
                 </div>
-                <h3 className="settings-title" style={{ marginTop: '0.75rem' }}>Pilih Template</h3>
+                <h3 className="settings-title" style={{ marginTop: '0.75rem' }}>{t.selectTemplate}</h3>
                 <div className="template-grid">
                     {filteredTemplates.map(tpl => (
                         <div key={tpl.id}

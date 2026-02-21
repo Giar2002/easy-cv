@@ -1,8 +1,29 @@
+'use client';
+
+import { useEffect } from 'react';
 import Link from 'next/link';
+import { useCVStore } from '@/store/useCVStore';
+import { getTranslations } from '@/lib/i18n';
+import { Moon, Sun } from 'lucide-react';
 
 export default function LandingPage() {
+  const settings = useCVStore(s => s.settings);
+  const setSettings = useCVStore(s => s.setSettings);
+  const language = settings.language;
+  const theme = settings.theme || 'light';
+  const t = getTranslations(language);
+
+  // Apply theme class to document properties
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setSettings({ theme: theme === 'light' ? 'dark' : 'light' });
+  }
+
   return (
-    <div className="landing-body">
+    <div className={`landing-body ${theme}`}>
       {/* Navbar */}
       <nav className="landing-nav">
         <div className="nav-container">
@@ -18,32 +39,60 @@ export default function LandingPage() {
             </div>
             <span>EasY CV</span>
           </div>
-          <Link href="/builder" className="btn btn-primary nav-cta">Buka App</Link>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button className="btn btn-ghost btn-icon" onClick={toggleTheme} title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'} style={{ padding: '0.5rem' }}>
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
+            <div style={{ position: 'relative' }}>
+              <select
+                value={language}
+                onChange={e => setSettings({ language: e.target.value as 'en' | 'id' })}
+                style={{
+                  padding: '0.4rem 2rem 0.4rem 1rem',
+                  borderRadius: '100px',
+                  cursor: 'pointer',
+                  background: 'var(--bg-panel)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border)',
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  appearance: 'none'
+                }}
+              >
+                <option value="en">🇬🇧 EN</option>
+                <option value="id">🇮🇩 ID</option>
+              </select>
+              <div style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-secondary)' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+            </div>
+            <Link href="/templates" className="btn btn-primary nav-cta">{t.navOpenApp}</Link>
+          </div>
         </div>
       </nav>
 
       {/* Hero Section */}
       <header className="landing-hero">
         <div className="hero-content">
-          <span className="hero-badge">✨ Versi 2.0 Kini Tersedia</span>
-          <h1>Buat CV Profesional <span className="gradient-text">Dalam Hitungan Menit</span></h1>
-          <p className="hero-desc">Platform pembuat CV gratis dengan 30+ template premium. Tanpa login, data tersimpan aman di browser Anda. Hasil export PDF siap kirim, lolos ATS.</p>
+          <span className="hero-badge">{t.heroBadge}</span>
+          <h1>{t.heroTitle1} <span className="gradient-text">{t.heroTitle2}</span></h1>
+          <p className="hero-desc">{t.heroDesc}</p>
           <div className="hero-actions">
-            <Link href="/builder" className="btn btn-lg btn-primary pulse-anim">
-              Mulai Buat Sekarang
+            <Link href="/templates" className="btn btn-lg btn-primary pulse-anim">
+              {t.heroBtnStart}
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
               </svg>
             </Link>
-            <a href="#features" className="btn btn-lg btn-secondary">Pelajari Fitur</a>
+            <a href="#features" className="btn btn-lg btn-secondary">{t.heroBtnFeatures}</a>
           </div>
           <div className="hero-stats">
-            <div className="stat-item"><span className="stat-num">100%</span><span className="stat-label">Gratis</span></div>
+            <div className="stat-item"><span className="stat-num">100%</span><span className="stat-label">{t.statFree}</span></div>
             <div className="stat-divider" />
-            <div className="stat-item"><span className="stat-num">30+</span><span className="stat-label">Template</span></div>
+            <div className="stat-item"><span className="stat-num">30+</span><span className="stat-label">{t.statTemplates}</span></div>
             <div className="stat-divider" />
-            <div className="stat-item"><span className="stat-num">ATS</span><span className="stat-label">Friendly</span></div>
+            <div className="stat-item"><span className="stat-num">ATS</span><span className="stat-label">{t.statATS}</span></div>
           </div>
         </div>
         <div className="hero-visual">
@@ -138,7 +187,7 @@ export default function LandingPage() {
       {/* Features Section */}
       <section id="features" className="features-section">
         <div className="section-container">
-          <h2 className="section-title">Kenapa Memilih EasY CV?</h2>
+          <h2 className="section-title">{t.featTitle}</h2>
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon icon-ats">
@@ -146,8 +195,8 @@ export default function LandingPage() {
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                 </svg>
               </div>
-              <h3>ATS Friendly</h3>
-              <p>Template khusus yang dioptimalkan agar mudah dibaca oleh sistem Applicant Tracking System (ATS) perusahaan besar.</p>
+              <h3>{t.feat1Title}</h3>
+              <p>{t.feat1Desc}</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon icon-templates">
@@ -157,8 +206,8 @@ export default function LandingPage() {
                   <line x1="9" y1="21" x2="9" y2="9" />
                 </svg>
               </div>
-              <h3>30 Pilihan Template</h3>
-              <p>Dari gaya modern, profesional, ATS, hingga kreatif. Sesuaikan tampilan CV dengan industri dan kepribadian Anda untuk memukau HRD.</p>
+              <h3>{t.feat2Title}</h3>
+              <p>{t.feat2Desc}</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon icon-privacy">
@@ -167,8 +216,8 @@ export default function LandingPage() {
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
               </div>
-              <h3>Privasi Terjamin</h3>
-              <p>Data Anda 100% tersimpan di browser (localStorage). Tidak ada data yang diupload ke server kami. Aman dan rahasia.</p>
+              <h3>{t.feat3Title}</h3>
+              <p>{t.feat3Desc}</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon icon-live">
@@ -177,8 +226,8 @@ export default function LandingPage() {
                   <circle cx="12" cy="12" r="3" />
                 </svg>
               </div>
-              <h3>Live Preview</h3>
-              <p>Lihat perubahan CV secara real-time saat Anda mengetik. Edit dengan mudah dan cepat tanpa refresh halaman.</p>
+              <h3>{t.feat4Title}</h3>
+              <p>{t.feat4Desc}</p>
             </div>
           </div>
         </div>
@@ -187,8 +236,8 @@ export default function LandingPage() {
       {/* Template Showcase */}
       <section className="templates-showcase">
         <div className="section-container">
-          <h2 className="section-title">Koleksi Template Premium</h2>
-          <p className="section-subtitle">Pilih gaya yang mencerminkan profesionalisme Anda</p>
+          <h2 className="section-title">{t.showcaseTitle}</h2>
+          <p className="section-subtitle">{t.showcaseSubtitle}</p>
           <div className="showcase-grid">
             {/* Modern */}
             <div className="showcase-item">
@@ -237,7 +286,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="center-cta">
-            <Link href="/builder" className="btn btn-lg btn-outline">Lihat Semua 30 Template</Link>
+            <Link href="/builder" className="btn btn-lg btn-outline">{t.showcaseBtn}</Link>
           </div>
         </div>
       </section>
@@ -247,11 +296,11 @@ export default function LandingPage() {
         <div className="footer-content">
           <div className="footer-logo"><span>EasY CV</span></div>
           <div className="footer-links">
-            <Link href="/builder">Buat CV</Link>
-            <a href="#">Tentang</a>
-            <a href="#">Privasi</a>
+            <Link href="/builder">{t.footerBuild}</Link>
+            <a href="#">{t.footerAbout}</a>
+            <a href="#">{t.footerPrivacy}</a>
           </div>
-          <div className="footer-copyright">&copy; 2026 EasY CV. Dibuat dengan ❤️ untuk pencari kerja.</div>
+          <div className="footer-copyright">{t.footerCopyright}</div>
         </div>
       </footer>
     </div>

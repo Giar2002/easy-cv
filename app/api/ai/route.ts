@@ -32,6 +32,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Teks terlalu panjang (Maksimal 2000 karakter)' }, { status: 400 });
         }
 
+        // Remove HTML tags for AI processing to avoid formatting glitches
+        const plainText = text.replace(/<[^>]*>?/gm, '');
+
         // Look for GEMINI_API_KEY environment variable. 
         // Fallback logic for testing: (Usually you should throw an error, but let's be graceful if it's missing)
         const apiKey = process.env.GEMINI_API_KEY;
@@ -40,19 +43,12 @@ export async function POST(req: Request) {
             const isExperience = text.toLowerCase().includes('dev') || text.toLowerCase().includes('pt') || text.toLowerCase().includes('kerja') || text.toLowerCase().includes('proyek');
 
             let mockGrammar = isIndo
-                ? 'Saya adalah seorang developer yang suka menulis kode menggunakan React.'
-                : 'I am a developer who likes to write code using React.';
+                ? `[Simulasi AI - Grammar Checked]\n\n${plainText}`
+                : `[AI Mock - Grammar Checked]\n\n${plainText}`;
 
             let mockEnhance = isIndo
-                ? 'Pengembang Web Frontend antusias yang berspesialisasi dalam membangun antarmuka pengguna yang responsif dan interaktif menggunakan React.js dan teknologi web modern. Berdedikasi untuk menghasilkan kode yang bersih, efisien, dan mudah dipelihara.'
-                : 'Frontend Web Developer specializing in building responsive and interactive user interfaces using React.js and modern web technologies. Passionate about writing clean, maintainable code.';
-
-            if (isExperience) {
-                mockGrammar = isIndo ? 'Saya bekerja sebagai developer.' : 'I worked as a developer.';
-                mockEnhance = isIndo
-                    ? 'Bertanggung jawab dalam merancang, mengembangkan, dan memelihara aplikasi web skala besar menggunakan ekosistem React.js. Berhasil meningkatkan performa antarmuka pengguna sebesar 30% melalui efisiensi kode dan modernisasi arsitektur frontend.'
-                    : 'Responsible for designing, developing, and maintaining large-scale web applications using the React.js ecosystem. Successfully improved user interface performance by 30% through code efficiency and modernizing frontend architecture.';
-            }
+                ? `[Simulasi AI - Teks Lebih Profesional]\n\nSaya merekomendasikan: ${plainText}`
+                : `[AI Mock - Enhanced Professional Text]\n\nI recommend: ${plainText}`;
 
             const mockResult = action === 'grammar' ? mockGrammar : mockEnhance;
 
@@ -61,30 +57,33 @@ export async function POST(req: Request) {
             return NextResponse.json({ result: mockResult });
         }
 
-        // Remove HTML tags for AI processing to avoid formatting glitches
-        const plainText = text.replace(/<[^>]*>?/gm, '');
+        // plainText handled above
 
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
         let systemPrompt = '';
         if (action === 'grammar') {
-            systemPrompt = "You are a professional CV editor. Fix the grammar, spelling, and punctuation of the provided text. Keep the language the same as the original (Indonesian or English). Return ONLY the corrected text. Do NOT wrap in quotes or add conversational filler. Provide output in plain text.";
+            systemPrompt = "You are a professional CV editor. Fix the grammar, spelling, and punctuation of the provided text. CRITICAL: You MUST keep the language EXACTLY the same as the original text (If Indonesian, answer in Indonesian. If English, answer in English). Return ONLY the corrected text. Do NOT wrap in quotes or add conversational filler. Provide output in plain text.";
         } else if (action === 'enhance') {
-            systemPrompt = "You are an expert career coach. Enhance the provided CV text to sound more professional, impactful, and action-oriented. Use strong action verbs. Keep it concise and suitable for a resume. Keep the language the same as the original text (Indonesian or English). Return ONLY the enhanced text. Do NOT wrap in quotes or add conversational filler. Provide output in plain text.";
+            systemPrompt = "You are an expert career coach. Enhance the provided CV text to sound more professional, impactful, and action-oriented. Use strong action verbs. Keep it concise. CRITICAL INSTRUCTIONS:\n1. You MUST keep the language EXACTLY the same as the original text.\n2. Do NOT use markdown formatting like asterisks (**) or underscores (_).\n3. Return ONLY the enhanced text. Do NOT wrap in quotes or add conversational filler. Provide output in plain text.";
+        } else if (action === 'generate-skills') {
+            systemPrompt = "You are an expert technical recruiter. Based on the job title/role provided by the user, generate a comma-separated list of 5-8 highly relevant skills for that role. Include a mix of hard and soft skills. CRITICAL: You MUST respond in the EXACT SAME language the user used to specify the role. Return ONLY the comma-separated string, nothing else. Example: 'React, Node.js, Problem Solving, Communication'.";
         } else {
-            systemPrompt = "You are a helpful CV assistant.";
+            systemPrompt = "You are a helpful CV assistant. Do NOT use markdown formatting like **bold** in your responses. Output plain text.";
         }
 
-        const fullPrompt = `${systemPrompt} \n\nUser Text: \n${plainText} `;
+        const fullPrompt = `${systemPrompt}\n\nUser Input:\n${plainText}`;
 
         const result = await model.generateContent(fullPrompt);
         const response = await result.response;
-        // Output format back to paragraphs for react-quill compatibility
+        // Output format back to paragraphs for react-quill compatibility (unless it's skills)
         let generatedText = response.text();
 
-        // Convert newlines to HTML paragraphs so that it displays nicely in the Rich Text Editor
-        generatedText = generatedText.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
+        if (action !== 'generate-skills') {
+            // Convert newlines to HTML paragraphs so that it displays nicely in the Rich Text Editor
+            generatedText = generatedText.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
+        }
 
         return NextResponse.json({ result: generatedText });
     } catch (error: any) {
