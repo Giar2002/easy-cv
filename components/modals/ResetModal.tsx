@@ -3,10 +3,23 @@ import toast from 'react-hot-toast';
 
 export default function ResetModal({ onClose }: { onClose: () => void }) {
     const resetAll = useCVStore(s => s.resetAll);
+    const language = useCVStore(s => s.settings.language);
+
+    const isEn = language === 'en';
+
+    const texts = {
+        successToast: isEn ? 'All CV data successfully reset!' : 'Semua data CV berhasil direset!',
+        title: isEn ? 'Reset All Data?' : 'Reset Semua Data?',
+        description: isEn 
+            ? 'This action will permanently delete all your profile, experience, education, skills, and settings data back to the initial empty state. This action <b>cannot be undone</b>.'
+            : 'Tindakan ini akan menghapus permanen seluruh data profil, pengalaman, pendidikan, keahlian, dan pengaturan Anda ke keadaan kosong awal. Tindakan ini <b>tidak bisa dibatalkan</b>.',
+        cancel: isEn ? 'Cancel' : 'Batal',
+        confirm: isEn ? 'Yes, Reset Data' : 'Ya, Reset Data'
+    };
 
     const handleConfirm = () => {
         resetAll();
-        toast.success('Semua data CV berhasil direset!', {
+        toast.success(texts.successToast, {
             style: {
                 background: '#333',
                 color: '#fff',
@@ -28,18 +41,16 @@ export default function ResetModal({ onClose }: { onClose: () => void }) {
                             <line x1="14" y1="11" x2="14" y2="17" />
                         </svg>
                     </div>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#fff', marginBottom: '0.5rem' }}>Reset Semua Data?</h2>
-                    <p style={{ fontSize: '0.9rem', color: '#9ca3af', lineHeight: 1.5 }}>
-                        Tindakan ini akan menghapus permanen seluruh data profil, pengalaman, pendidikan, keahlian, dan pengaturan Anda ke keadaan kosong awal. Tindakan ini <b>tidak bisa dibatalkan</b>.
-                    </p>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#fff', marginBottom: '0.5rem' }}>{texts.title}</h2>
+                    <p style={{ fontSize: '0.9rem', color: '#9ca3af', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: texts.description }} />
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
                     <button className="btn btn-ghost" onClick={onClose} style={{ flex: 1 }}>
-                        Batal
+                        {texts.cancel}
                     </button>
                     <button className="btn" onClick={handleConfirm} style={{ flex: 1, background: '#ef4444', color: 'white', border: 'none' }}>
-                        Ya, Reset Data
+                        {texts.confirm}
                     </button>
                 </div>
             </div>
