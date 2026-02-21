@@ -3,21 +3,21 @@
 import { useState } from 'react';
 import { useCVStore } from '@/store/useCVStore';
 import AIImportModal from '@/components/modals/AIImportModal';
+import ResetModal from '@/components/modals/ResetModal';
 
 export default function AppHeader() {
     const resetAll = useCVStore(s => s.resetAll);
     const settings = useCVStore(s => s.settings);
     const setSettings = useCVStore(s => s.setSettings);
     const [showImportModal, setShowImportModal] = useState(false);
+    const [showResetModal, setShowResetModal] = useState(false);
 
     function toggleLanguage() {
         setSettings({ language: settings.language === 'en' ? 'id' : 'en' });
     }
 
     function handleReset() {
-        if (confirm('Hapus semua data CV? Tindakan ini tidak bisa dibatalkan.')) {
-            resetAll();
-        }
+        setShowResetModal(true);
     }
 
     function handleDownloadPDF() {
@@ -101,6 +101,7 @@ export default function AppHeader() {
                 </div>
             </header>
             {showImportModal && <AIImportModal onClose={() => setShowImportModal(false)} />}
+            {showResetModal && <ResetModal onClose={() => setShowResetModal(false)} />}
         </>
     );
 }
