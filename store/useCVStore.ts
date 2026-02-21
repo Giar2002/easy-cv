@@ -58,6 +58,8 @@ interface CVStore extends CVData {
     resetAll: () => void;
     // Import
     importData: (data: Partial<CVData>) => void;
+    // Generic Reorder
+    reorderItem: (section: keyof Omit<CVData, 'personal' | 'settings'>, oldIndex: number, newIndex: number) => void;
 }
 
 export const useCVStore = create<CVStore>()(
@@ -148,6 +150,14 @@ export const useCVStore = create<CVStore>()(
                     languages: normalize(data.languages || s.languages),
                     settings: { ...s.settings, ...(data.settings || {}) }
                 };
+            }),
+
+            reorderItem: (section, oldIndex, newIndex) => set(s => {
+                const arr = [...s[section]];
+                if (oldIndex < 0 || oldIndex >= arr.length || newIndex < 0 || newIndex >= arr.length) return {};
+                const [moved] = arr.splice(oldIndex, 1);
+                arr.splice(newIndex, 0, moved);
+                return { [section]: arr } as Partial<CVStore>;
             }),
         }),
         { name: 'cv-builder-state' }

@@ -2,17 +2,35 @@
 
 import { useCVStore } from '@/store/useCVStore';
 import { Experience } from '@/types/cv';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
-function EntryCard({ exp, onUpdate, onRemove }: {
+function SortableEntryCard({ exp, onUpdate, onRemove }: {
     exp: Experience;
     onUpdate: (data: Partial<Experience>) => void;
     onRemove: () => void;
 }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: exp.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        position: 'relative' as const,
+        zIndex: isDragging ? 1 : 0,
+    };
+
     return (
-        <div className="entry-card">
+        <div ref={setNodeRef} style={style} className="entry-card">
             <div className="entry-header">
-                <span className="entry-number">{exp.title || 'Pengalaman Baru'}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div {...attributes} {...listeners} style={{ cursor: 'grab', display: 'flex', alignItems: 'center', color: '#9ca3af' }}>
+                        <GripVertical size={16} />
+                    </div>
+                    <span className="entry-number">{exp.title || 'Pengalaman Baru'}</span>
+                </div>
                 <button className="btn-remove" onClick={onRemove}><X size={14} /></button>
             </div>
             <div className="entry-fields">
@@ -51,6 +69,21 @@ export default function ExperienceTab() {
     const addExperience = useCVStore(s => s.addExperience);
     const updateExperience = useCVStore(s => s.updateExperience);
     const removeExperience = useCVStore(s => s.removeExperience);
+    const reorderItem = useCVStore(s => s.reorderItem);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            const oldIndex = experience.findIndex((item) => item.id === active.id);
+            const newIndex = experience.findIndex((item) => item.id === over.id);
+            reorderItem('experience', oldIndex, newIndex);
+        }
+    };
 
     return (
         <div>
@@ -58,14 +91,20 @@ export default function ExperienceTab() {
                 <h2>Pengalaman Kerja</h2>
                 <p className="section-desc">Tambahkan riwayat pekerjaan Anda</p>
             </div>
-            <div className="entries-list">
-                {experience.map(exp => (
-                    <EntryCard key={exp.id} exp={exp}
-                        onUpdate={data => updateExperience(exp.id, data)}
-                        onRemove={() => removeExperience(exp.id)} />
-                ))}
-            </div>
-            <button className="btn-add" onClick={addExperience}>
+
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={experience.map(e => e.id)} strategy={verticalListSortingStrategy}>
+                    <div className="entries-list">
+                        {experience.map(exp => (
+                            <SortableEntryCard key={exp.id} exp={exp}
+                                onUpdate={data => updateExperience(exp.id, data)}
+                                onRemove={() => removeExperience(exp.id)} />
+                        ))}
+                    </div>
+                </SortableContext>
+            </DndContext>
+
+            <button className="btn-add" onClick={addExperience} style={{ marginTop: '1rem' }}>
                 <Plus size={16} /> Tambah Pengalaman
             </button>
         </div>
