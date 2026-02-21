@@ -2,6 +2,8 @@
 
 import { useCVStore } from '@/store/useCVStore';
 import { Experience } from '@/types/cv';
+import RichTextInput from './RichTextInput';
+import AIAssistantButton from './AIAssistantButton';
 import { X, Plus, GripVertical } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -55,9 +57,15 @@ function SortableEntryCard({ exp, onUpdate, onRemove }: {
                         onChange={e => onUpdate({ endDate: e.target.value })} />
                 </div>
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                    <label>Deskripsi</label>
-                    <textarea rows={3} placeholder="Jelaskan tanggung jawab dan pencapaian..." value={exp.description}
-                        onChange={e => onUpdate({ description: e.target.value })} />
+                    <label style={{ display: 'flex', alignItems: 'center' }}>
+                        Deskripsi
+                        <AIAssistantButton value={exp.description} onApply={val => onUpdate({ description: val })} />
+                    </label>
+                    <RichTextInput
+                        value={exp.description}
+                        onChange={val => onUpdate({ description: val })}
+                        placeholder="Jelaskan tanggung jawab dan pencapaian..."
+                    />
                 </div>
             </div>
         </div>

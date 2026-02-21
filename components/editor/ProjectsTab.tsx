@@ -2,6 +2,8 @@
 
 import { useCVStore } from '@/store/useCVStore';
 import { Project } from '@/types/cv';
+import RichTextInput from './RichTextInput';
+import AIAssistantButton from './AIAssistantButton';
 import { X, Plus, GripVertical } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -60,9 +62,15 @@ function SortableProjectCard({ proj, onUpdate, onRemove }: {
                         onChange={e => onUpdate({ endDate: e.target.value })} />
                 </div>
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                    <label>Deskripsi</label>
-                    <textarea rows={3} placeholder="Deskripsi proyek dan teknologi yang digunakan..." value={proj.description}
-                        onChange={e => onUpdate({ description: e.target.value })} />
+                    <label style={{ display: 'flex', alignItems: 'center' }}>
+                        Deskripsi
+                        <AIAssistantButton value={proj.description} onApply={val => onUpdate({ description: val })} />
+                    </label>
+                    <RichTextInput
+                        value={proj.description}
+                        onChange={val => onUpdate({ description: val })}
+                        placeholder="Deskripsi proyek dan teknologi yang digunakan..."
+                    />
                 </div>
             </div>
         </div>

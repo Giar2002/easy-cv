@@ -21,10 +21,10 @@ export default function ModernTemplate({ data }: TemplateProps) {
                 </div>
             </div>
             <div className="cv-body">
-                {personal.summary && personal.summary.trim() && (
+                {personal.summary && personal.summary !== '<p><br></p>' && (
                     <div className="cv-section">
                         <div className="cv-section-title">{t.profile}</div>
-                        <div className="cv-summary">{personal.summary}</div>
+                        <div className="cv-summary" dangerouslySetInnerHTML={{ __html: personal.summary }} />
                     </div>
                 )}
                 {experience.length > 0 && (
@@ -37,7 +37,7 @@ export default function ModernTemplate({ data }: TemplateProps) {
                                     <span className="cv-entry-date">{exp.startDate}{exp.startDate && exp.endDate ? ' — ' : ''}{exp.endDate}</span>
                                 </div>
                                 {exp.company && <div className="cv-entry-subtitle">{exp.company}</div>}
-                                {exp.description && <div className="cv-entry-desc">{nl2br(exp.description)}</div>}
+                                {exp.description && exp.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: exp.description }} />}
                             </div>
                         ))}
                     </div>
@@ -52,7 +52,7 @@ export default function ModernTemplate({ data }: TemplateProps) {
                                     <span className="cv-entry-date">{edu.startDate}{edu.startDate && edu.endDate ? ' — ' : ''}{edu.endDate}</span>
                                 </div>
                                 {edu.degree && <div className="cv-entry-subtitle">{edu.degree}</div>}
-                                {edu.description && <div className="cv-entry-desc">{nl2br(edu.description)}</div>}
+                                {edu.description && edu.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: edu.description }} />}
                             </div>
                         ))}
                     </div>
@@ -77,7 +77,7 @@ export default function ModernTemplate({ data }: TemplateProps) {
                                     <span className="cv-entry-date">{proj.startDate}{proj.startDate && proj.endDate ? ' — ' : ''}{proj.endDate}</span>
                                 </div>
                                 {proj.role && <div className="cv-entry-subtitle">{proj.role}</div>}
-                                {proj.description && <div className="cv-entry-desc">{nl2br(proj.description)}</div>}
+                                {proj.description && proj.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: proj.description }} />}
                                 {proj.link && <div className="cv-entry-link"><a href={proj.link} target="_blank" rel="noopener noreferrer">{proj.link}</a></div>}
                             </div>
                         ))}

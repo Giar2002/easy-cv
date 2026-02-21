@@ -2,6 +2,8 @@
 
 import { useRef } from 'react';
 import { useCVStore } from '@/store/useCVStore';
+import RichTextInput from './RichTextInput';
+import AIAssistantButton from './AIAssistantButton';
 
 export default function PersonalTab() {
     const personal = useCVStore(s => s.personal);
@@ -79,10 +81,15 @@ export default function PersonalTab() {
                         value={personal.website} onChange={e => setPersonal({ website: e.target.value })} />
                 </div>
                 <div className="form-group full-width">
-                    <label htmlFor="summary">Ringkasan Profil <small style={{ fontWeight: 'normal', fontSize: '0.8em', marginLeft: 5, color: 'var(--text-muted)' }}>(Min. 10 karakter)</small></label>
-                    <textarea id="summary" rows={4}
+                    <label htmlFor="summary" style={{ display: 'flex', alignItems: 'center' }}>
+                        Ringkasan Profil <small style={{ fontWeight: 'normal', fontSize: '0.8em', marginLeft: 5, color: 'var(--text-muted)' }}>(Min. 10 karakter)</small>
+                        <AIAssistantButton value={personal.summary} onApply={val => setPersonal({ summary: val })} />
+                    </label>
+                    <RichTextInput
+                        value={personal.summary}
+                        onChange={val => setPersonal({ summary: val })}
                         placeholder="Tuliskan ringkasan singkat tentang diri Anda, pengalaman, dan keahlian utama..."
-                        value={personal.summary} onChange={e => setPersonal({ summary: e.target.value })} />
+                    />
                 </div>
             </div>
         </div>

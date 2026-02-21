@@ -50,10 +50,10 @@ export default function CreativeTemplate({ data }: TemplateProps) {
 
             {/* Main */}
             <div className="cv-main">
-                {personal.summary && (
-                    <div style={{ marginBottom: '1.25rem' }}>
-                        <div className="cv-section-title" style={{ marginBottom: '0.5rem' }}>{t.profile}</div>
-                        <div style={{ fontSize: '8.5pt', color: '#444', lineHeight: 1.6 }}>{personal.summary}</div>
+                {personal.summary && personal.summary !== '<p><br></p>' && (
+                    <div className="cv-section">
+                        <div className="cv-section-title">{t.profile}</div>
+                        <div style={{ fontSize: '8.5pt', color: '#444', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: personal.summary }} />
                     </div>
                 )}
                 {experience.length > 0 && (
@@ -66,7 +66,7 @@ export default function CreativeTemplate({ data }: TemplateProps) {
                                     <span className="cv-entry-date">{exp.startDate}{exp.endDate && ` — ${exp.endDate}`}</span>
                                 </div>
                                 {exp.company && <div className="cv-entry-sub">{exp.company}</div>}
-                                {exp.description && <div className="cv-entry-desc">{nl2br(exp.description)}</div>}
+                                {exp.description && exp.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: exp.description }} />}
                             </div>
                         ))}
                     </div>
@@ -81,7 +81,7 @@ export default function CreativeTemplate({ data }: TemplateProps) {
                                     <span className="cv-entry-date">{edu.startDate}{edu.endDate && ` — ${edu.endDate}`}</span>
                                 </div>
                                 {edu.degree && <div className="cv-entry-sub">{edu.degree}</div>}
-                                {edu.description && <div className="cv-entry-desc">{nl2br(edu.description)}</div>}
+                                {edu.description && edu.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: edu.description }} />}
                             </div>
                         ))}
                     </div>
@@ -96,7 +96,7 @@ export default function CreativeTemplate({ data }: TemplateProps) {
                                     <span className="cv-entry-date">{proj.startDate}{proj.endDate && ` — ${proj.endDate}`}</span>
                                 </div>
                                 {proj.role && <div className="cv-entry-sub">{proj.role}</div>}
-                                {proj.description && <div className="cv-entry-desc">{nl2br(proj.description)}</div>}
+                                {proj.description && proj.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: proj.description }} />}
                                 {proj.link && <div className="cv-entry-link"><a href={proj.link} target="_blank" rel="noopener noreferrer">{proj.link}</a></div>}
                             </div>
                         ))}

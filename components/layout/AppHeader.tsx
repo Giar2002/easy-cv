@@ -59,7 +59,7 @@ export default function AppHeader() {
                                 <polyline points="10 9 9 9 8 9" />
                             </svg>
                         </div>
-                        <h1>CV Builder</h1>
+                        <h1>EasY CV</h1>
                     </a>
                     <div className="header-actions">
                         <button className="btn btn-ghost" onClick={toggleLanguage} title={settings.language === 'en' ? 'Switch to Indonesian' : 'Ganti ke Bahasa Inggris'}>

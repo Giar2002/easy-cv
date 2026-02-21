@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CV Builder — Buat CV Profesional",
-  description: "Buat CV profesional secara gratis dengan preview real-time, multiple template, ATS mode, dan export PDF",
+  title: "EasY CV — Bikin CV ATS Friendly Cepat & Profesional",
+  description: "Buat CV profesional bahasa Indonesia & Inggris secara gratis. Mudah 'Isi CV'-mu dengan preview real-time, AI Asisten, dan ATS mode.",
 };
 
 export default function RootLayout({
@@ -24,7 +25,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className} suppressHydrationWarning>
+        <Toaster position="bottom-right" />
+        {children}
+      </body>
     </html>
   );
 }

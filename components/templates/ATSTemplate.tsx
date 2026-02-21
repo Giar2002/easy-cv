@@ -15,10 +15,10 @@ export default function ATSTemplate({ data }: TemplateProps) {
             </div>
             <div className="cv-divider" />
             <div className="cv-body">
-                {personal.summary && (
+                {personal.summary && personal.summary !== '<p><br></p>' && (
                     <div className="cv-section">
                         <div className="cv-section-title">{t.profile}</div>
-                        <div className="cv-summary">{personal.summary}</div>
+                        <div className="cv-summary" dangerouslySetInnerHTML={{ __html: personal.summary }} />
                     </div>
                 )}
                 {skills.length > 0 && (
@@ -38,7 +38,7 @@ export default function ATSTemplate({ data }: TemplateProps) {
                                     <span className="cv-entry-title">{exp.title}{exp.company ? ` | ${exp.company}` : ''}</span>
                                     <span className="cv-entry-date">{exp.startDate}{exp.endDate && ` — ${exp.endDate}`}</span>
                                 </div>
-                                {exp.description && <div className="cv-entry-desc">{nl2br(exp.description)}</div>}
+                                {exp.description && exp.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: exp.description }} />}
                             </div>
                         ))}
                     </div>
@@ -52,7 +52,7 @@ export default function ATSTemplate({ data }: TemplateProps) {
                                     <span className="cv-entry-title">{edu.degree}{edu.school ? `, ${edu.school}` : ''}</span>
                                     <span className="cv-entry-date">{edu.startDate}{edu.endDate && ` — ${edu.endDate}`}</span>
                                 </div>
-                                {edu.description && <div className="cv-entry-desc">{nl2br(edu.description)}</div>}
+                                {edu.description && edu.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: edu.description }} />}
                             </div>
                         ))}
                     </div>
@@ -66,7 +66,7 @@ export default function ATSTemplate({ data }: TemplateProps) {
                                     <span className="cv-entry-title">{proj.name}{proj.role ? ` | ${proj.role}` : ''}</span>
                                     <span className="cv-entry-date">{proj.startDate}{proj.endDate && ` — ${proj.endDate}`}</span>
                                 </div>
-                                {proj.description && <div className="cv-entry-desc">{nl2br(proj.description)}</div>}
+                                {proj.description && proj.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: proj.description }} />}
                                 {proj.link && <div className="cv-entry-link"><a href={proj.link} target="_blank" rel="noopener noreferrer">{proj.link}</a></div>}
                             </div>
                         ))}
