@@ -5,17 +5,35 @@ import { useCVStore } from '@/store/useCVStore';
 import { getTranslations } from '@/lib/i18n';
 import RichTextInput from './RichTextInput';
 import AIAssistantButton from './AIAssistantButton';
+import toast from 'react-hot-toast';
+
+const MAX_PHOTO_SIZE_BYTES = 2 * 1024 * 1024;
 
 export default function PersonalTab() {
     const personal = useCVStore(s => s.personal);
     const setPersonal = useCVStore(s => s.setPersonal);
     const language = useCVStore(s => s.settings.language);
     const t = getTranslations(language);
+    const isEn = language === 'en';
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            toast.error(isEn ? 'Please select a valid image file.' : 'Pilih file gambar yang valid.');
+            e.target.value = '';
+            return;
+        }
+        if (file.size > MAX_PHOTO_SIZE_BYTES) {
+            toast.error(
+                isEn
+                    ? 'Image is too large. Maximum file size is 2MB.'
+                    : 'Ukuran gambar terlalu besar. Maksimal 2MB.'
+            );
+            e.target.value = '';
+            return;
+        }
         const reader = new FileReader();
         reader.onload = (ev) => {
             setPersonal({ photo: ev.target?.result as string });

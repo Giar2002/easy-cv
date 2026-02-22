@@ -42,7 +42,14 @@
     --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12);
     --transition: 0.2s ease;
-    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --bg-app: var(--bg-primary);
+    --bg-panel: var(--bg-card);
+    --border-color: var(--border);
+    --primary: var(--accent);
+    --primary-color: var(--accent);
+    --text: var(--text-primary);
+    --text-color: var(--text-primary);
 
     /* CV Preview colors (Always light) */
     --cv-bg: #ffffff;
@@ -1832,7 +1839,9 @@ select.form-group,
    ============================================= */
 @media (max-width: 1024px) {
     .app-main {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column-reverse;
+        /* Preview on top, Editor below */
     }
 
     .editor-panel {
@@ -1840,11 +1849,21 @@ select.form-group,
         top: auto;
         max-height: none;
         border-right: none;
-        border-bottom: 1px solid var(--border);
+        border-top: 1px solid var(--border);
     }
 
     .preview-panel {
-        max-height: none;
+        max-height: 50vh;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    /* Scale down CV to fit screen width roughly */
+    .cv-wrapper {
+        transform: scale(0.65);
+        transform-origin: top center;
+        margin-bottom: -35%;
+        /* Compensate for scaled height */
     }
 }
 
@@ -1862,7 +1881,13 @@ select.form-group,
     }
 
     .template-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
+    }
+
+    .cv-wrapper {
+        transform: scale(0.45);
+        transform-origin: top center;
+        margin-bottom: -55%;
     }
 
     .cv-page {

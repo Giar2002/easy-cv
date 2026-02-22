@@ -6,9 +6,15 @@ const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
 const LIMIT = 5; // Max 5 requests
 const WINDOW_MS = 60 * 1000; // 1 minute window
 
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message) return error.message;
+    if (typeof error === 'string') return error;
+    return 'Error generating content';
+}
+
 export async function POST(req: Request) {
     try {
-        const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+        const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
         const now = Date.now();
         const limitData = rateLimitMap.get(ip);
 
@@ -40,7 +46,6 @@ export async function POST(req: Request) {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
             const isIndo = text.toLowerCase().includes('saya') || text.toLowerCase().includes('di') || text.toLowerCase().includes('dan') || text.toLowerCase().includes('kerja');
-            const isExperience = text.toLowerCase().includes('dev') || text.toLowerCase().includes('pt') || text.toLowerCase().includes('kerja') || text.toLowerCase().includes('proyek');
 
             let mockGrammar = isIndo
                 ? `[Simulasi AI - Grammar Checked]\n\n${plainText}`
@@ -50,7 +55,16 @@ export async function POST(req: Request) {
                 ? `[Simulasi AI - Teks Lebih Profesional]\n\nSaya merekomendasikan: ${plainText}`
                 : `[AI Mock - Enhanced Professional Text]\n\nI recommend: ${plainText}`;
 
-            const mockResult = action === 'grammar' ? mockGrammar : mockEnhance;
+            const mockSkills = isIndo
+                ? 'Komunikasi, Problem Solving, Manajemen Waktu, Kolaborasi Tim, Adaptabilitas'
+                : 'Communication, Problem Solving, Time Management, Teamwork, Adaptability';
+
+            const mockResult =
+                action === 'grammar'
+                    ? mockGrammar
+                    : action === 'generate-skills'
+                        ? mockSkills
+                        : mockEnhance;
 
             // Simulating network delay
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -64,9 +78,9 @@ export async function POST(req: Request) {
 
         let systemPrompt = '';
         if (action === 'grammar') {
-            systemPrompt = "You are a professional CV editor. Fix the grammar, spelling, and punctuation of the provided text. CRITICAL: You MUST keep the language EXACTLY the same as the original text (If Indonesian, answer in Indonesian. If English, answer in English). Return ONLY the corrected text. Do NOT wrap in quotes or add conversational filler. Provide output in plain text.";
+            systemPrompt = "You are a professional CV editor. Fix the grammar, spelling, and punctuation of the provided text. CRITICAL: You MUST reply in the EXACT SAME LANGUAGE as the User Input (e.g., if input is Indonesian, output MUST be Indonesian). Return ONLY the corrected text. Do NOT wrap in quotes or add conversational filler. Provide output in plain text.";
         } else if (action === 'enhance') {
-            systemPrompt = "You are an expert career coach. Enhance the provided CV text to sound more professional, impactful, and action-oriented. Use strong action verbs. Keep it concise. CRITICAL INSTRUCTIONS:\n1. You MUST keep the language EXACTLY the same as the original text.\n2. Do NOT use markdown formatting like asterisks (**) or underscores (_).\n3. Return ONLY the enhanced text. Do NOT wrap in quotes or add conversational filler. Provide output in plain text.";
+            systemPrompt = "You are an expert career coach. Enhance the provided CV text to sound more professional, impactful, and action-oriented. Use strong action verbs. Keep it concise. CRITICAL INSTRUCTIONS:\n1. You MUST reply in the EXACT SAME LANGUAGE as the User Input (e.g., Indonesian input -> Indonesian output).\n2. Do NOT use markdown formatting like asterisks (**) or underscores (_).\n3. Return ONLY the enhanced text. Do NOT wrap in quotes or add conversational filler. Provide output in plain text.";
         } else if (action === 'generate-skills') {
             systemPrompt = "You are an expert technical recruiter. Based on the job title/role provided by the user, generate a comma-separated list of 5-8 highly relevant skills for that role. Include a mix of hard and soft skills. CRITICAL: You MUST respond in the EXACT SAME language the user used to specify the role. Return ONLY the comma-separated string, nothing else. Example: 'React, Node.js, Problem Solving, Communication'.";
         } else {
@@ -86,8 +100,21 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json({ result: generatedText });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('AI API Error:', error);
-        return NextResponse.json({ error: error.message || 'Error generating content' }, { status: 500 });
+        const message = getErrorMessage(error);
+        const statusCode =
+            typeof error === 'object' && error !== null && 'status' in error
+                ? Number((error as { status?: unknown }).status)
+                : NaN;
+
+        // Handle 429 quota exhaustion gracefully
+        if (statusCode === 429 || message.includes('429') || message.includes('Quota exceeded')) {
+            return NextResponse.json({
+                error: 'Batas gratis penggunaan AI harian telah habis. Silakan coba lagi besok.'
+            }, { status: 429 });
+        }
+
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

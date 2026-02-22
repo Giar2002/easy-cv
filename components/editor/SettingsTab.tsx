@@ -7,6 +7,7 @@ import { TemplateCategory } from '@/types/cv';
 import { useState } from 'react';
 import TemplateThumbnail from './TemplateThumbnails';
 import { getTranslations } from '@/lib/i18n';
+import { FONT_OPTIONS, sanitizeFontFamily } from '@/lib/fonts';
 
 // --- HSV helpers ---
 function hsvToRgb(h: number, s: number, v: number): [number, number, number] {
@@ -237,14 +238,15 @@ export default function SettingsTab() {
                     <label className="setting-label">{t.fontFamily}</label>
                     <select
                         className="form-input"
-                        value={settings.fontFamily || 'Inter, sans-serif'}
+                        value={sanitizeFontFamily(settings.fontFamily)}
                         onChange={e => setSettings({ fontFamily: e.target.value })}
                         style={{ width: '100%' }}
                     >
-                        <option value="Inter, sans-serif">Inter (Sans-Serif)</option>
-                        <option value="'Merriweather', serif">Merriweather (Serif)</option>
-                        <option value="'Roboto Mono', monospace">Roboto Mono (Monospace)</option>
-                        <option value="'Outfit', sans-serif">Outfit (Modern)</option>
+                        {FONT_OPTIONS.map(option => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 <div className="setting-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem', marginTop: '1rem' }}>

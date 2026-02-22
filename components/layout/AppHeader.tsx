@@ -7,7 +7,6 @@ import AIImportModal from '@/components/modals/AIImportModal';
 import ResetModal from '@/components/modals/ResetModal';
 
 export default function AppHeader() {
-    const resetAll = useCVStore(s => s.resetAll);
     const settings = useCVStore(s => s.settings);
     const setSettings = useCVStore(s => s.setSettings);
     const language = settings.language;

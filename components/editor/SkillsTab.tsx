@@ -76,13 +76,36 @@ function SortableSkillCard({ skill, onUpdate, onRemove, t, isEn }: {
     );
 }
 
-function AiSkillSuggester({ jobTitle, onAddMultiple, t }: { jobTitle: string, onAddMultiple: (names: string[]) => void, t: ReturnType<typeof getTranslations> }) {
+function AiSkillSuggester({
+    jobTitle,
+    onAddMultiple,
+    t,
+    isEn,
+}: {
+    jobTitle: string;
+    onAddMultiple: (names: string[]) => void;
+    t: ReturnType<typeof getTranslations>;
+    isEn: boolean;
+}) {
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
+    const texts = {
+        missingRole: isEn
+            ? 'Fill in your Job Title in the Profile tab first.'
+            : 'Isi jabatan/profesi Anda di tab Profil terlebih dahulu.',
+        tooManyRequests: isEn
+            ? 'Too many requests. Please wait a moment.'
+            : 'Terlalu banyak permintaan. Silakan tunggu sebentar.',
+        serverError: isEn ? 'Failed to reach AI server.' : 'Gagal menghubungi AI server.',
+        panelTitle: isEn ? 'AI Suggestions' : 'Rekomendasi AI',
+        basedOnRole: isEn ? 'Based on role:' : 'Berdasarkan profesi:',
+        emptyRole: isEn ? '(Empty)' : '(Kosong)',
+        generate: isEn ? 'Generate' : 'Generate',
+    };
 
     const handleGenerate = async () => {
         if (!jobTitle) {
-            toast.error(t.skillsDesc || 'Isi Jabatan/Profesi Anda di tab Profil terlebih dahulu.');
+            toast.error(texts.missingRole);
             return;
         }
 
@@ -96,7 +119,7 @@ function AiSkillSuggester({ jobTitle, onAddMultiple, t }: { jobTitle: string, on
             const data = await res.json();
 
             if (res.status === 429) {
-                toast.error(data.error || 'Terlalu banyak permintaan. Silakan tunggu sebentar.');
+                toast.error(data.error || texts.tooManyRequests);
             } else if (data.result) {
                 // The AI should return a comma separated string
                 const parts = data.result.replace(/<[^>]*>?/gm, '').split(',').map((s: string) => s.trim()).filter(Boolean);
@@ -104,8 +127,8 @@ function AiSkillSuggester({ jobTitle, onAddMultiple, t }: { jobTitle: string, on
             } else if (data.error) {
                 toast.error('AI Error: ' + data.error);
             }
-        } catch (e) {
-            toast.error('Gagal menghubungi AI Server');
+        } catch {
+            toast.error(texts.serverError);
         }
         setLoading(false);
     };
@@ -115,12 +138,14 @@ function AiSkillSuggester({ jobTitle, onAddMultiple, t }: { jobTitle: string, on
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                 <div>
                     <h4 style={{ fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <Sparkles size={14} style={{ color: 'var(--accent)' }} /> Rekomendasi AI
+                        <Sparkles size={14} style={{ color: 'var(--accent)' }} /> {texts.panelTitle}
                     </h4>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>Berdasarkan profesi: <b>{jobTitle || '(Kosong)'}</b></p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
+                        {texts.basedOnRole} <b>{jobTitle || texts.emptyRole}</b>
+                    </p>
                 </div>
                 <button type="button" onClick={handleGenerate} disabled={loading || !jobTitle} className="btn-ai" style={{ padding: '0.4rem 0.8rem' }}>
-                    {loading ? <Loader2 size={14} className="spin" /> : <Sparkles size={14} />} Generate
+                    {loading ? <Loader2 size={14} className="spin" /> : <Sparkles size={14} />} {texts.generate}
                 </button>
             </div>
 
@@ -154,6 +179,16 @@ export default function SkillsTab() {
     const language = useCVStore(s => s.settings.language);
     const t = getTranslations(language);
     const isEn = language === 'en';
+    const texts = {
+        multiSkillHint: isEn
+            ? 'Separate with commas (,) to add multiple skills at once.'
+            : 'Pisahkan dengan koma (,) untuk menambahkan banyak skill sekaligus.',
+        bulkLabel: isEn ? 'Add Multiple Skills' : 'Tambah Banyak Keahlian Sekaligus',
+        bulkPlaceholder: isEn ? 'Example: Java, React, Node.js' : 'Contoh: Java, React, Node.js',
+        bulkHelp: isEn
+            ? 'Type skills separated by commas, then press Enter or click Add.'
+            : 'Ketik keahlian dipisah koma, lalu tekan Enter atau tombol Tambah.',
+    };
 
     const [bulkInput, setBulkInput] = useState('');
 
@@ -171,11 +206,22 @@ export default function SkillsTab() {
         }
     };
 
-    const setSkills = useCVStore(s => s.setSettings); // Wait, we don't have setSkills directly exposed in CVStore
-    // Let's rely on useCVStore.setState which is the standard Zustand external API.
     const handleAddMultiple = (names: string[]) => {
+        const normalizedInput = Array.from(
+            new Set(names.map(name => name.trim()).filter(Boolean))
+        );
+        if (normalizedInput.length === 0) return;
+
         useCVStore.setState(state => {
-            const newSkills = names.map(name => ({
+            const existingNames = new Set(
+                state.skills.map(skill => skill.name.trim().toLowerCase()).filter(Boolean)
+            );
+            const filtered = normalizedInput.filter(
+                name => !existingNames.has(name.toLowerCase())
+            );
+            if (filtered.length === 0) return {};
+
+            const newSkills = filtered.map(name => ({
                 id: Math.random().toString(36).slice(2, 9),
                 name,
                 level: 3 as const
@@ -188,19 +234,19 @@ export default function SkillsTab() {
         <div>
             <div className="section-header">
                 <h2>{t.skillsTitle}</h2>
-                <p className="section-desc">{t.skillsDesc} Pisahkan dengan koma (,) untuk menambahkan banyak skill sekaligus.</p>
+                <p className="section-desc">{t.skillsDesc} {texts.multiSkillHint}</p>
             </div>
 
-            <AiSkillSuggester jobTitle={jobTitle} onAddMultiple={handleAddMultiple} t={t} />
+            <AiSkillSuggester jobTitle={jobTitle} onAddMultiple={handleAddMultiple} t={t} isEn={isEn} />
 
             <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: '8px' }}>
                 <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>
-                    Tambah Banyak Keahlian Sekaligus
+                    {texts.bulkLabel}
                 </label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <input
                         type="text"
-                        placeholder="Contoh: Java, React, Node.js"
+                        placeholder={texts.bulkPlaceholder}
                         value={bulkInput}
                         onChange={e => setBulkInput(e.target.value)}
                         onKeyDown={e => {
@@ -226,7 +272,7 @@ export default function SkillsTab() {
                     </button>
                 </div>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: 0 }}>
-                    Ketik keahlian dipisah koma, lalu tekan <b>Enter</b> atau tombol Tambah.
+                    {texts.bulkHelp}
                 </p>
             </div>
 

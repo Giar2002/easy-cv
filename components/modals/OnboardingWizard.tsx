@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 export default function OnboardingWizard() {
     const { settings, personal, setPersonal, completeOnboarding } = useCVStore();
     const t = getTranslations(settings.language);
+    const isEn = settings.language === 'en';
 
     // Internal state
     const [isOpen, setIsOpen] = useState(false);
@@ -58,19 +59,24 @@ export default function OnboardingWizard() {
         }
 
         if (!jobTitle) {
-            toast.error(settings.language === 'id' ? 'Silakan isi Profesi terlebih dahulu' : 'Please fill your Job Title first');
+            toast.error(isEn ? 'Please fill your Job Title first' : 'Silakan isi Profesi terlebih dahulu');
             return;
         }
 
         setLoading(true);
         try {
+            const summaryPrompt = isEn
+                ? `Write a concise professional summary (2-3 sentences) for this role: ${jobTitle}. Keep it natural and not too formal.`
+                : `Buatkan summary profesional singkat (2-3 kalimat) untuk profesi: ${jobTitle}. Jangan pakai bahasa kaku.`;
+            const skillsPrompt = isEn ? `Role: ${jobTitle}` : `Profesi: ${jobTitle}`;
+
             // Setup two requests: Profile and Skills
             const [profileRes, skillsRes] = await Promise.all([
                 fetch('/api/ai', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        text: `Buatkan summary profesional singkat (2-3 kalimat) untuk profesi: ${jobTitle}. Jangan pakai bahasa kaku.`,
+                        text: summaryPrompt,
                         action: 'enhance'
                     })
                 }),
@@ -78,7 +84,7 @@ export default function OnboardingWizard() {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        text: `Profesi: ${jobTitle}`,
+                        text: skillsPrompt,
                         action: 'generate-skills'
                     })
                 })
@@ -86,30 +92,50 @@ export default function OnboardingWizard() {
 
             const pData = await profileRes.json();
             const sData = await skillsRes.json();
+            const profileError = !profileRes.ok ? pData?.error : null;
+            const skillsError = !skillsRes.ok ? sData?.error : null;
+            let hasAppliedData = false;
 
-            if (pData.result) {
+            if (profileRes.ok && pData?.result) {
                 // Strip HTML p tags safely
                 const cleanSummary = pData.result.replace(/<\/?p>/g, '').trim();
                 setPersonal({ summary: cleanSummary });
+                hasAppliedData = true;
             }
 
-            if (sData.result) {
+            if (skillsRes.ok && sData?.result) {
                 // Extract commas
-                const parts = sData.result.replace(/<[^>]*>?/gm, '').split(',').map((s: string) => s.trim()).filter(Boolean);
+                const parts: string[] = sData.result
+                    .replace(/<[^>]*>?/gm, '')
+                    .split(',')
+                    .map((s: string) => s.trim())
+                    .filter(Boolean);
                 // Inject skills via zustand external api
                 useCVStore.setState(state => {
-                    const newSkills = parts.map((name: string) => ({
+                    const existingNames = new Set(
+                        state.skills.map(skill => skill.name.trim().toLowerCase()).filter(Boolean)
+                    );
+                    const filtered = parts.filter(name => !existingNames.has(name.toLowerCase()));
+                    const newSkills = filtered.map((name: string) => ({
                         id: Math.random().toString(36).slice(2, 9),
                         name,
                         level: 3 as const
                     }));
+                    if (newSkills.length === 0) return {};
+                    hasAppliedData = true;
                     return { skills: [...state.skills, ...newSkills] };
                 });
             }
 
-            toast.success(settings.language === 'id' ? 'Profil & Keahlian berhasil digenerate!' : 'Profile & Skills generated successfully!');
-        } catch (e) {
-            toast.error('AI error. Data disimpan tanpa AI.');
+            if (profileError || skillsError) {
+                toast.error(profileError || skillsError || (isEn ? 'AI request failed.' : 'Permintaan AI gagal.'));
+            } else if (hasAppliedData) {
+                toast.success(isEn ? 'Profile & Skills generated successfully!' : 'Profil & Keahlian berhasil digenerate!');
+            } else {
+                toast.error(isEn ? 'AI did not return any usable content.' : 'AI tidak mengembalikan konten yang bisa dipakai.');
+            }
+        } catch {
+            toast.error(isEn ? 'AI error. Data saved without AI output.' : 'Terjadi error AI. Data tersimpan tanpa output AI.');
         } finally {
             setLoading(false);
             completeOnboarding();

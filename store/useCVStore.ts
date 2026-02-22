@@ -6,6 +6,7 @@ import {
     CVData, PersonalInfo, Experience, Education,
     Skill, Project, Certification, Language, CVSettings
 } from '@/types/cv';
+import { DEFAULT_FONT_FAMILY, sanitizeFontFamily } from '@/lib/fonts';
 
 function uid(): string {
     return Math.random().toString(36).slice(2, 9);
@@ -21,11 +22,28 @@ const defaultSettings: CVSettings = {
     showPhoto: true,
     colorScheme: '#6c63ff',
     language: 'en',
-    fontFamily: 'Inter, sans-serif',
+    fontFamily: DEFAULT_FONT_FAMILY,
     fontSize: 12,
     theme: 'light',
     hasCompletedOnboarding: false
 };
+
+function normalizeSkillLevel(level: unknown): Skill['level'] {
+    const parsed = Number(level);
+    if (!Number.isFinite(parsed)) return 3;
+    const clamped = Math.max(1, Math.min(5, Math.round(parsed)));
+    return clamped as Skill['level'];
+}
+
+function normalizeLanguageLevel(level: unknown): Language['level'] {
+    if (typeof level !== 'string' || !level.trim()) return 'Professional';
+    const normalized = level.trim().toLowerCase();
+    if (normalized === 'native' || normalized === 'native/bilingual') return 'Native';
+    if (normalized === 'fluent') return 'Fluent';
+    if (normalized === 'professional' || normalized === 'proficient') return 'Professional';
+    if (normalized === 'conversational' || normalized === 'intermediate') return 'Conversational';
+    return 'Basic';
+}
 
 interface CVStore extends CVData {
     // Personal
@@ -127,7 +145,10 @@ export const useCVStore = create<CVStore>()(
             })),
             removeLanguage: (id) => set(s => ({ languages: s.languages.filter(e => e.id !== id) })),
 
-            setSettings: (data) => set(s => ({ settings: { ...s.settings, ...data } })),
+            setSettings: (data) => set(s => {
+                const merged = { ...s.settings, ...data };
+                return { settings: { ...merged, fontFamily: sanitizeFontFamily(merged.fontFamily) } };
+            }),
             completeOnboarding: () => set(s => ({ settings: { ...s.settings, hasCompletedOnboarding: true } })),
 
             resetAll: () => set({
@@ -144,15 +165,37 @@ export const useCVStore = create<CVStore>()(
             importData: (data) => set(s => {
                 const normalize = <T extends { id?: string }>(arr: T[] = []): (T & { id: string })[] =>
                     arr.map(item => ({ ...item, id: item.id || uid() }));
+                const normalizeSkills = (
+                    arr: Array<Partial<Skill> & { id?: string; proficiency?: number | string }> = []
+                ): Skill[] => arr.map(item => ({
+                    id: item.id || uid(),
+                    name: item.name || '',
+                    level: normalizeSkillLevel(item.level ?? item.proficiency),
+                }));
+                const normalizeLanguages = (
+                    arr: Array<Partial<Language> & { id?: string }> = []
+                ): Language[] => arr.map(item => ({
+                    id: item.id || uid(),
+                    name: item.name || '',
+                    level: normalizeLanguageLevel(item.level),
+                }));
+                const mergedSettings = { ...s.settings, ...(data.settings || {}) };
                 return {
                     personal: { ...defaultPersonal, ...(data.personal || {}) },
                     experience: normalize(data.experience || s.experience),
                     education: normalize(data.education || s.education),
-                    skills: normalize(data.skills || s.skills),
+                    skills: normalizeSkills(
+                        (data.skills as Array<Partial<Skill> & { id?: string; proficiency?: number | string }> | undefined) || s.skills
+                    ),
                     projects: normalize(data.projects || s.projects),
                     certifications: normalize(data.certifications || s.certifications),
-                    languages: normalize(data.languages || s.languages),
-                    settings: { ...s.settings, ...(data.settings || {}) }
+                    languages: normalizeLanguages(
+                        (data.languages as Array<Partial<Language> & { id?: string }> | undefined) || s.languages
+                    ),
+                    settings: {
+                        ...mergedSettings,
+                        fontFamily: sanitizeFontFamily(mergedSettings.fontFamily),
+                    }
                 };
             }),
 

@@ -10,6 +10,7 @@ import ATSTemplate from '@/components/templates/ATSTemplate';
 import CreativeTemplate from '@/components/templates/CreativeTemplate';
 import ExecutiveTemplate from '@/components/templates/ExecutiveTemplate';
 import GenericTemplate from '@/components/templates/GenericTemplate';
+import { sanitizeFontFamily } from '@/lib/fonts';
 
 export default function TemplateRenderer() {
     const personal = useCVStore(s => s.personal);
@@ -46,12 +47,13 @@ export default function TemplateRenderer() {
     };
 
     const component = templateMap[settings.template] || <GenericTemplate {...props} />;
+    const fontFamily = sanitizeFontFamily(settings.fontFamily);
 
     return (
         <>
             <style>{`
                 #cv-page, #cv-page * {
-                    font-family: ${settings.fontFamily || 'Inter, sans-serif'} !important;
+                    font-family: ${fontFamily} !important;
                 }
             `}</style>
             <div id="cv-page" className={`cv-page template-${settings.template}`}

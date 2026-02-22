@@ -9,7 +9,7 @@ while ((match = regex.exec(html)) !== null) {
   const tplId = match[1];
   let innerHtml = match[2].trim();
   innerHtml = innerHtml.replace(/class="/g, 'className="');
-  innerHtml = innerHtml.replace(/style="([^"]+)"/g, (match, p1) => {
+  innerHtml = innerHtml.replace(/style="([^"]+)"/g, (match) => {
     // Basic inline style to react style converter (if any)
     return match; // Hopefully none or we can fix manually
   });

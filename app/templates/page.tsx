@@ -11,7 +11,7 @@ import { getTranslations } from '@/lib/i18n';
 import { ArrowLeft } from 'lucide-react';
 
 export default function TemplatesPage() {
-    const { completeOnboarding, settings } = useCVStore();
+    const settings = useCVStore(s => s.settings);
     const router = useRouter();
 
     useEffect(() => {
