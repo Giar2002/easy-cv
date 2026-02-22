@@ -21,11 +21,13 @@ function normalizeRichTextArtifacts(value: string): string {
 
     return value
         .replace(/\u00ad/g, '') // remove soft hyphen from pasted PDF/OCR text
+        .replace(/[\u200B-\u200D\u2060\uFEFF]/g, '') // remove zero-width separators
         .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])-\s*<\/p>\s*<p>\s*([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1$2')
         .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])-\s*<br\s*\/?>\s*([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1$2')
         .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])<\/p>\s*<p>\s*([a-zà-öø-ÿ])/g, '$1$2')
         .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])-\s*\n\s*([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1$2')
-        .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])\s*\n\s*([a-zà-öø-ÿ])/g, '$1$2');
+        .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])\s*\n\s*([a-zà-öø-ÿ])/g, '$1$2')
+        .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])-([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1\u2011$2');
 }
 
 export default function TemplateRenderer() {

@@ -1299,8 +1299,8 @@ select.form-group,
     overflow: visible;
 
     /* Fix text overflow for rich text editor content */
-    word-wrap: break-word;
-    overflow-wrap: anywhere;
+    word-wrap: normal;
+    overflow-wrap: normal;
     word-break: normal;
     white-space: normal;
 }
@@ -1309,8 +1309,8 @@ select.form-group,
 .cv-page p {
     margin: 0;
     padding: 0;
-    word-wrap: break-word;
-    overflow-wrap: anywhere;
+    word-wrap: normal;
+    overflow-wrap: normal;
     word-break: normal;
 }
 
@@ -1398,7 +1398,7 @@ select.form-group,
     color: var(--cv-text-secondary);
     white-space: normal;
     word-break: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     hyphens: none;
 }
 
@@ -1447,7 +1447,7 @@ select.form-group,
     color: var(--cv-text-secondary);
     white-space: normal;
     word-break: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     hyphens: none;
 }
 
