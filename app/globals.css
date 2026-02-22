@@ -1402,6 +1402,24 @@ select.form-group,
     hyphens: none;
 }
 
+/* Force rich-text content in summary/description to wrap safely.
+   This protects against pasted inline styles like `white-space: nowrap` */
+.cv-summary,
+.cv-summary-text,
+.cv-entry-desc {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.cv-summary :is(p, div, span, li, strong, em, b, i, u),
+.cv-summary-text :is(p, div, span, li, strong, em, b, i, u),
+.cv-entry-desc :is(p, div, span, li, strong, em, b, i, u) {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+    hyphens: none !important;
+}
+
 .cv-entry {
     margin-bottom: 1rem;
     padding-bottom: 0.85rem;

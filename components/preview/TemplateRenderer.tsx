@@ -20,8 +20,12 @@ function normalizeRichTextArtifacts(value: string): string {
     if (!value) return value;
 
     return value
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/\u00A0/g, ' ')
         .replace(/\u00ad/g, '') // remove soft hyphen from pasted PDF/OCR text
         .replace(/[\u200B-\u200D\u2060\uFEFF]/g, '') // remove zero-width separators
+        .replace(/style="[^"]*white-space\s*:\s*nowrap[^"]*"/gi, '')
+        .replace(/style='[^']*white-space\s*:\s*nowrap[^']*'/gi, '')
         .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])-\s*<\/p>\s*<p>\s*([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1$2')
         .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])-\s*<br\s*\/?>\s*([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1$2')
         .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])<\/p>\s*<p>\s*([a-zà-öø-ÿ])/g, '$1$2')
