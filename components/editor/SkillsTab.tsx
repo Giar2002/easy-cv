@@ -111,10 +111,11 @@ function AiSkillSuggester({
 
         setLoading(true);
         try {
+            const requestText = isEn ? `Role: ${jobTitle}` : `Profesi: ${jobTitle}`;
             const res = await fetch('/api/ai', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: `Role: ${jobTitle}`, action: 'generate-skills' })
+                body: JSON.stringify({ text: requestText, action: 'generate-skills' })
             });
             const data = await res.json();
 

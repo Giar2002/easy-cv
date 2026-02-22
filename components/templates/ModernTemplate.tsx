@@ -10,7 +10,7 @@ export default function ModernTemplate({ data }: TemplateProps) {
         <>
             <div className="cv-header">
                 {show && personal.photo && (
-                    <div id="cvPhotoContainer">
+                    <div id="cvPhotoContainer" className="cv-photo-container">
                         <img src={personal.photo} className="cv-photo" alt="Foto Profil" />
                     </div>
                 )}
@@ -22,13 +22,13 @@ export default function ModernTemplate({ data }: TemplateProps) {
             </div>
             <div className="cv-body">
                 {personal.summary && personal.summary !== '<p><br></p>' && (
-                    <div className="cv-section">
+                    <div className="cv-section cv-section-profile">
                         <div className="cv-section-title">{t.profile}</div>
-                        <div className="cv-summary" dangerouslySetInnerHTML={{ __html: personal.summary }} />
+                        <div className="cv-summary-text cv-summary" dangerouslySetInnerHTML={{ __html: personal.summary }} />
                     </div>
                 )}
                 {experience.length > 0 && (
-                    <div className="cv-section">
+                    <div className="cv-section cv-section-experience">
                         <div className="cv-section-title">{t.experience}</div>
                         {experience.map(exp => (
                             <div key={exp.id} className="cv-entry">
@@ -36,14 +36,14 @@ export default function ModernTemplate({ data }: TemplateProps) {
                                     <span className="cv-entry-title">{exp.title || t.defaultPosition}</span>
                                     <span className="cv-entry-date">{exp.startDate}{exp.startDate && exp.endDate ? ' — ' : ''}{exp.endDate}</span>
                                 </div>
-                                {exp.company && <div className="cv-entry-subtitle">{exp.company}</div>}
+                                {exp.company && <div className="cv-entry-subtitle cv-entry-company">{exp.company}</div>}
                                 {exp.description && exp.description !== '<p><br></p>' && <div className="cv-entry-desc" dangerouslySetInnerHTML={{ __html: exp.description }} />}
                             </div>
                         ))}
                     </div>
                 )}
                 {education.length > 0 && (
-                    <div className="cv-section">
+                    <div className="cv-section cv-section-education">
                         <div className="cv-section-title">{t.education}</div>
                         {education.map(edu => (
                             <div key={edu.id} className="cv-entry">
@@ -58,7 +58,7 @@ export default function ModernTemplate({ data }: TemplateProps) {
                     </div>
                 )}
                 {skills.length > 0 && (
-                    <div className="cv-section">
+                    <div className="cv-section cv-section-skills">
                         <div className="cv-section-title">{t.skills}</div>
                         <div className="cv-skills-grid">
                             {skills.map(skill => (
@@ -68,7 +68,7 @@ export default function ModernTemplate({ data }: TemplateProps) {
                     </div>
                 )}
                 {projects.length > 0 && (
-                    <div className="cv-section">
+                    <div className="cv-section cv-section-projects">
                         <div className="cv-section-title">{t.projects}</div>
                         {projects.map(proj => (
                             <div key={proj.id} className="cv-entry">
@@ -84,7 +84,7 @@ export default function ModernTemplate({ data }: TemplateProps) {
                     </div>
                 )}
                 {certifications.length > 0 && (
-                    <div className="cv-section">
+                    <div className="cv-section cv-section-certifications cv-section-certificates">
                         <div className="cv-section-title">{t.certifications}</div>
                         {certifications.map(cert => (
                             <div key={cert.id} className="cv-entry">
@@ -98,7 +98,7 @@ export default function ModernTemplate({ data }: TemplateProps) {
                     </div>
                 )}
                 {languages.length > 0 && (
-                    <div className="cv-section">
+                    <div className="cv-section cv-section-languages">
                         <div className="cv-section-title">{t.languages}</div>
                         <div className="cv-skills-grid">
                             {languages.map(lang => (

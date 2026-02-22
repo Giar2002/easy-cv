@@ -61,6 +61,7 @@ export interface CVSettings {
     template: string;
     showPhoto: boolean;
     colorScheme: string; // hex color e.g. "#6c63ff"
+    isPremiumUser?: boolean;
     language?: 'id' | 'en';
     fontFamily?: string;
     fontSize?: number | string;
@@ -79,7 +80,7 @@ export interface CVData {
     settings: CVSettings;
 }
 
-export type TemplateCategory = 'all' | 'popular' | 'ats' | 'general' | 'creative' | 'professional' | 'industry' | 'layout';
+export type TemplateCategory = 'all' | 'popular' | 'premium' | 'ats' | 'general' | 'creative' | 'professional' | 'industry' | 'layout';
 
 export interface TemplateConfig {
     id: string;

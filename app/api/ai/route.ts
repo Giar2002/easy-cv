@@ -12,6 +12,15 @@ function getErrorMessage(error: unknown): string {
     return 'Error generating content';
 }
 
+function toParagraphHtml(text: string): string {
+    return text
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => `<p>${line}</p>`)
+        .join('');
+}
+
 export async function POST(req: Request) {
     try {
         const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
@@ -31,7 +40,9 @@ export async function POST(req: Request) {
             rateLimitMap.set(ip, { count: 1, resetTime: now + WINDOW_MS });
         }
 
-        const { text, action } = await req.json();
+        const payload = await req.json();
+        const text = typeof payload?.text === 'string' ? payload.text : '';
+        const action = typeof payload?.action === 'string' ? payload.action : '';
 
         // Token length safeguard
         if (!text || text.length > 2000) {
@@ -39,32 +50,43 @@ export async function POST(req: Request) {
         }
 
         // Remove HTML tags for AI processing to avoid formatting glitches
-        const plainText = text.replace(/<[^>]*>?/gm, '');
+        const plainText = text.replace(/<[^>]*>?/gm, '').trim();
+        if (!plainText) {
+            return NextResponse.json({ error: 'Teks tidak boleh kosong' }, { status: 400 });
+        }
+        if (plainText.length > 2000) {
+            return NextResponse.json({ error: 'Teks terlalu panjang (Maksimal 2000 karakter)' }, { status: 400 });
+        }
 
         // Look for GEMINI_API_KEY environment variable. 
         // Fallback logic for testing: (Usually you should throw an error, but let's be graceful if it's missing)
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
-            const isIndo = text.toLowerCase().includes('saya') || text.toLowerCase().includes('di') || text.toLowerCase().includes('dan') || text.toLowerCase().includes('kerja');
+            const lowered = plainText.toLowerCase();
+            const isIndo = lowered.includes('saya') || lowered.includes('di ') || lowered.includes('dan') || lowered.includes('kerja') || lowered.includes('profesi');
 
             let mockGrammar = isIndo
-                ? `[Simulasi AI - Grammar Checked]\n\n${plainText}`
-                : `[AI Mock - Grammar Checked]\n\n${plainText}`;
+                ? plainText
+                : plainText;
 
             let mockEnhance = isIndo
-                ? `[Simulasi AI - Teks Lebih Profesional]\n\nSaya merekomendasikan: ${plainText}`
-                : `[AI Mock - Enhanced Professional Text]\n\nI recommend: ${plainText}`;
+                ? `Saya adalah profesional yang fokus pada hasil, kolaborasi tim, dan peningkatan berkelanjutan. ${plainText}`
+                : `I am a results-driven professional with strong collaboration skills and a continuous improvement mindset. ${plainText}`;
 
             const mockSkills = isIndo
                 ? 'Komunikasi, Problem Solving, Manajemen Waktu, Kolaborasi Tim, Adaptabilitas'
                 : 'Communication, Problem Solving, Time Management, Teamwork, Adaptability';
 
-            const mockResult =
+            let mockResult =
                 action === 'grammar'
                     ? mockGrammar
                     : action === 'generate-skills'
                         ? mockSkills
                         : mockEnhance;
+
+            if (action !== 'generate-skills') {
+                mockResult = toParagraphHtml(mockResult);
+            }
 
             // Simulating network delay
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -92,11 +114,11 @@ export async function POST(req: Request) {
         const result = await model.generateContent(fullPrompt);
         const response = await result.response;
         // Output format back to paragraphs for react-quill compatibility (unless it's skills)
-        let generatedText = response.text();
+        let generatedText = response.text().trim();
 
         if (action !== 'generate-skills') {
             // Convert newlines to HTML paragraphs so that it displays nicely in the Rich Text Editor
-            generatedText = generatedText.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
+            generatedText = toParagraphHtml(generatedText);
         }
 
         return NextResponse.json({ result: generatedText });

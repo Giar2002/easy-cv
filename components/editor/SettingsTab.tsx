@@ -2,12 +2,13 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import { useCVStore } from '@/store/useCVStore';
-import { TEMPLATES, TEMPLATE_CATEGORIES } from '@/lib/templates';
+import { TEMPLATES, TEMPLATE_CATEGORIES, canUseTemplate, isPremiumTemplate } from '@/lib/templates';
 import { TemplateCategory } from '@/types/cv';
 import { useState } from 'react';
 import TemplateThumbnail from './TemplateThumbnails';
 import { getTranslations } from '@/lib/i18n';
 import { FONT_OPTIONS, sanitizeFontFamily } from '@/lib/fonts';
+import toast from 'react-hot-toast';
 
 // --- HSV helpers ---
 function hsvToRgb(h: number, s: number, v: number): [number, number, number] {
@@ -201,6 +202,8 @@ export default function SettingsTab() {
     const language = useCVStore(s => s.settings.language);
     const t = getTranslations(language);
     const [activeCategory, setActiveCategory] = useState<TemplateCategory>('all');
+    const isPremiumUser = Boolean(settings.isPremiumUser);
+    const isEn = language === 'en';
 
     const categories = Object.entries(TEMPLATE_CATEGORIES) as [TemplateCategory, { name: string; icon: string }][];
     const filteredTemplates = activeCategory === 'all'
@@ -208,6 +211,18 @@ export default function SettingsTab() {
         : activeCategory === 'popular'
             ? TEMPLATES.filter(t => t.popular)
             : TEMPLATES.filter(t => t.category === activeCategory);
+
+    function handleTemplatePick(templateId: string) {
+        if (!canUseTemplate(templateId, isPremiumUser)) {
+            toast.error(
+                isEn
+                    ? 'This is a premium template. Turn on Premium simulation to use it.'
+                    : 'Ini template premium. Aktifkan simulasi Premium untuk memakainya.'
+            );
+            return;
+        }
+        setSettings({ template: templateId });
+    }
 
     return (
         <div>
@@ -279,6 +294,26 @@ export default function SettingsTab() {
                 <ColorPicker />
             </div>
 
+            {/* Premium Access Simulation */}
+            <div className="settings-group">
+                <div className="setting-item">
+                    <div className="setting-info">
+                        <span className="setting-label">{isEn ? 'Premium Access (Simulation)' : 'Akses Premium (Simulasi)'}</span>
+                        <span className="setting-desc">
+                            {isEn ? 'Turn on to unlock premium templates for testing.' : 'Aktifkan untuk membuka template premium saat pengujian.'}
+                        </span>
+                    </div>
+                    <label className="toggle-switch">
+                        <input
+                            type="checkbox"
+                            checked={isPremiumUser}
+                            onChange={e => setSettings({ isPremiumUser: e.target.checked })}
+                        />
+                        <span className="toggle-slider" />
+                    </label>
+                </div>
+            </div>
+
             {/* Template Selector */}
             <div className="settings-group">
                 <h3 className="settings-title">{t.filterCategory}</h3>
@@ -292,19 +327,35 @@ export default function SettingsTab() {
                 </div>
                 <h3 className="settings-title" style={{ marginTop: '0.75rem' }}>{t.selectTemplate}</h3>
                 <div className="template-grid">
-                    {filteredTemplates.map(tpl => (
+                    {filteredTemplates.map(tpl => {
+                        const isLocked = isPremiumTemplate(tpl.id) && !isPremiumUser;
+                        return (
                         <div key={tpl.id}
-                            className={`template-card ${settings.template === tpl.id ? 'active' : ''}`}
-                            onClick={() => setSettings({ template: tpl.id })}>
+                            className={`template-card ${settings.template === tpl.id ? 'active' : ''} ${isLocked ? 'locked' : ''}`}
+                            onClick={() => handleTemplatePick(tpl.id)}>
                             <div className="template-preview" style={{ background: '#f8f9fa', padding: 0, overflow: 'hidden' }}>
                                 <TemplateThumbnail tpl={tpl} />
+                                {isLocked && <span className="template-lock-indicator">🔒</span>}
                             </div>
                             <span className="template-name">{tpl.name}</span>
-                            {tpl.badge && <span className={`template-badge ${tpl.category === 'ats' ? 'ats' : tpl.popular ? 'popular' : ''}`}>{tpl.badge}</span>}
+                            {tpl.badge && (
+                                <span
+                                    className={`template-badge ${tpl.category === 'premium'
+                                        ? 'premium'
+                                        : tpl.category === 'ats'
+                                            ? 'ats'
+                                            : tpl.popular
+                                                ? 'popular'
+                                                : ''}`}
+                                >
+                                    {tpl.badge}
+                                </span>
+                            )}
                             {!tpl.badge && tpl.popular && <span className="template-badge popular">Populer</span>}
                             {!tpl.badge && tpl.category === 'ats' && !tpl.popular && <span className="template-badge ats">ATS</span>}
+                            {!tpl.badge && tpl.category === 'premium' && !tpl.popular && <span className="template-badge premium">Premium</span>}
                         </div>
-                    ))}
+                    );})}
                 </div>
             </div>
         </div>

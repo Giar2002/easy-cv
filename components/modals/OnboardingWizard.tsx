@@ -96,10 +96,10 @@ export default function OnboardingWizard() {
             const skillsError = !skillsRes.ok ? sData?.error : null;
             let hasAppliedData = false;
 
-            if (profileRes.ok && pData?.result) {
-                // Strip HTML p tags safely
-                const cleanSummary = pData.result.replace(/<\/?p>/g, '').trim();
-                setPersonal({ summary: cleanSummary });
+            if (profileRes.ok && typeof pData?.result === 'string' && pData.result.trim()) {
+                const summaryResult = pData.result.trim();
+                const summaryHtml = summaryResult.startsWith('<') ? summaryResult : `<p>${summaryResult}</p>`;
+                setPersonal({ summary: summaryHtml });
                 hasAppliedData = true;
             }
 

@@ -10,7 +10,7 @@ export default function ExecutiveTemplate({ data }: TemplateProps) {
         <>
             <div className="cv-header">
                 {show && personal.photo && (
-                    <div id="cvPhotoContainer">
+                    <div id="cvPhotoContainer" className="cv-photo-container">
                         <img src={personal.photo} className="cv-photo" alt="Foto Profil" />
                     </div>
                 )}

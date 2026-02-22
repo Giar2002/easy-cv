@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCVStore } from '@/store/useCVStore';
-import { TEMPLATES, TEMPLATE_CATEGORIES } from '@/lib/templates';
+import { TEMPLATES, TEMPLATE_CATEGORIES, canUseTemplate, isPremiumTemplate } from '@/lib/templates';
 import { TemplateCategory } from '@/types/cv';
 import TemplateThumbnail from '@/components/editor/TemplateThumbnails';
-import { getTranslations } from '@/lib/i18n';
 import { ArrowLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function TemplatesPage() {
     const settings = useCVStore(s => s.settings);
@@ -20,12 +20,18 @@ export default function TemplatesPage() {
     const setSettings = useCVStore(s => s.setSettings);
     const language = useCVStore(s => s.settings.language) || 'id';
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const t = getTranslations(language);
-
     const [selectedCat, setSelectedCat] = useState<TemplateCategory>('all');
+    const isPremiumUser = Boolean(settings.isPremiumUser);
 
     const handleSelectTemplate = (id: string) => {
+        if (!canUseTemplate(id, isPremiumUser)) {
+            toast.error(
+                language === 'en'
+                    ? 'This is a premium template. Turn on Premium simulation to use it.'
+                    : 'Ini template premium. Aktifkan simulasi Premium untuk memakainya.'
+            );
+            return;
+        }
         setSettings({ template: id });
         router.push('/builder');
     };
@@ -83,14 +89,36 @@ export default function TemplatesPage() {
                             <span>{cat.name}</span>
                         </button>
                     ))}
+                    <button
+                        onClick={() => setSettings({ isPremiumUser: !isPremiumUser })}
+                        style={{
+                            padding: '0.6rem 1.2rem',
+                            borderRadius: '100px',
+                            border: '1px solid var(--border)',
+                            background: isPremiumUser ? '#059669' : 'var(--bg-card)',
+                            color: isPremiumUser ? '#fff' : 'var(--text-primary)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            whiteSpace: 'nowrap',
+                            transition: 'all 0.2s',
+                            fontWeight: 600
+                        }}
+                    >
+                        <span>💎</span>
+                        <span>{isEn ? `Premium Sim: ${isPremiumUser ? 'ON' : 'OFF'}` : `Simulasi Premium: ${isPremiumUser ? 'ON' : 'OFF'}`}</span>
+                    </button>
                 </div>
 
                 {/* Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '2rem' }}>
-                    {filteredTemplates.map(tpl => (
+                    {filteredTemplates.map(tpl => {
+                        const isLocked = isPremiumTemplate(tpl.id) && !isPremiumUser;
+                        return (
                         <div
                             key={tpl.id}
-                            className="template-card"
+                            className={`template-card ${isLocked ? 'locked' : ''}`}
                             onClick={() => handleSelectTemplate(tpl.id)}
                             style={{
                                 cursor: 'pointer',
@@ -116,6 +144,7 @@ export default function TemplatesPage() {
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
                             }}>
                                 <TemplateThumbnail tpl={tpl} />
+                                {isLocked && <span className="template-lock-indicator">🔒</span>}
                                 {tpl.popular && <div style={{ position: 'absolute', top: 12, right: 12, background: '#f43f5e', color: 'white', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '100px', fontWeight: 600 }}>Popular</div>}
                                 {tpl.badge && <div style={{ position: 'absolute', top: 12, left: 12, background: 'var(--accent)', color: 'white', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '100px', fontWeight: 600 }}>{tpl.badge}</div>}
                             </div>
@@ -123,7 +152,7 @@ export default function TemplatesPage() {
                                 <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>{tpl.name}</h3>
                             </div>
                         </div>
-                    ))}
+                    );})}
                 </div>
             </div>
         </div>

@@ -473,6 +473,153 @@ export default function TemplateThumbnail({ tpl }: { tpl: TemplateConfig }) {
                     </div>
                 </>
             );
+        case 'premium-pop':
+            return (
+                <>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '4px', height: '100%' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ background: '#f5e96d', border: '1.5px solid #1f1f1f', borderRadius: '6px', padding: '4px' }}>
+                                <div className="tpl-mini-line w80 bold" style={{ background: '#1f1f1f', height: '4px' }} />
+                                <div className="tpl-mini-line w65 bold mt2" style={{ background: '#1f1f1f', height: '4px' }} />
+                            </div>
+                            <div style={{ background: '#f5e96d', border: '1.5px solid #1f1f1f', borderRadius: '6px', padding: '4px' }}>
+                                <div className="tpl-mini-line w55" style={{ background: '#8f62ff', height: '5px' }} />
+                                <div className="tpl-mini-line w90 mt2" />
+                                <div className="tpl-mini-line w85" />
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ background: '#f5e96d', border: '1.5px solid #1f1f1f', borderRadius: '6px', padding: '4px' }}>
+                                <div className="tpl-mini-photo" style={{ width: '20px', height: '20px', margin: '0 auto', border: '2px solid #fff' }} />
+                            </div>
+                            <div style={{ background: '#f5e96d', border: '1.5px solid #1f1f1f', borderRadius: '6px', padding: '4px' }}>
+                                <div className="tpl-mini-line w60" style={{ background: '#8f62ff', height: '5px' }} />
+                                <div className="tpl-mini-line w85 mt2" />
+                                <div className="tpl-mini-line w75" />
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        case 'premium-retro':
+            return (
+                <>
+                    <div style={{ border: '1.5px solid #222', borderRadius: '7px', padding: '4px', display: 'flex', gap: '4px', background: '#f8f2e8' }}>
+                        <div style={{ width: '22px', height: '28px', border: '1.5px solid #222', borderRadius: '5px', background: '#f79ac4' }} />
+                        <div style={{ flex: 1 }}>
+                            <div className="tpl-mini-line w70 bold" style={{ background: '#222', height: '5px' }} />
+                            <div className="tpl-mini-line w55 bold mt2" style={{ background: '#222', height: '5px' }} />
+                            <div className="tpl-mini-line w60 mt2" style={{ background: '#f79ac4' }} />
+                        </div>
+                    </div>
+                    <div style={{ marginTop: '4px', border: '1.5px solid #222', borderRadius: '7px', padding: '4px' }}>
+                        <div className="tpl-mini-line w50" style={{ background: '#222', height: '4px' }} />
+                        <div className="tpl-mini-line w90 mt2" />
+                        <div className="tpl-mini-line w80" />
+                    </div>
+                </>
+            );
+        case 'premium-soft':
+            return (
+                <>
+                    <div style={{ background: 'linear-gradient(90deg,#e6dccf 60%,#d6cbc3 40%)', borderRadius: '7px', padding: '4px', border: '1px solid #d4c9bc' }}>
+                        <div className="tpl-mini-line w65 bold" style={{ background: '#6f5b36', height: '4px' }} />
+                        <div className="tpl-mini-line w50 mt2" style={{ background: '#6f5b36' }} />
+                    </div>
+                    <div style={{ marginTop: '4px', borderRadius: '6px', background: '#fff', border: '1px solid #e6e1da', padding: '4px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' }}>
+                        <div className="tpl-mini-line w90" />
+                        <div className="tpl-mini-line w90" />
+                        <div className="tpl-mini-line w80" />
+                        <div className="tpl-mini-line w80" />
+                    </div>
+                </>
+            );
+        case 'premium-gallery':
+            return (
+                <>
+                    <div className="tpl-mini-line w100" style={{ background: '#f28c28', height: '3px' }} />
+                    <div style={{ marginTop: '4px', display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', gap: '4px' }}>
+                        <div style={{ background: '#f5e57a', borderRadius: '4px', height: '32px' }} />
+                        <div>
+                            <div className="tpl-mini-line w75 bold" style={{ background: '#222', height: '5px' }} />
+                            <div className="tpl-mini-line w50 mt2" style={{ background: '#f28c28' }} />
+                            <div className="tpl-mini-line w90 mt2" />
+                        </div>
+                    </div>
+                    <div style={{ marginTop: '4px', display: 'grid', gridTemplateColumns: '1fr 1fr 0.7fr', gap: '3px' }}>
+                        <div className="tpl-mini-line w100" />
+                        <div className="tpl-mini-line w100" />
+                        <div className="tpl-mini-line w100" style={{ background: '#f6f2eb' }} />
+                    </div>
+                </>
+            );
+        case 'premium-noir':
+            return (
+                <>
+                    <div style={{ background: '#1c1c1f', borderRadius: '7px', padding: '4px' }}>
+                        <div className="tpl-mini-line w65 bold" style={{ background: '#f6c63d', height: '5px' }} />
+                        <div className="tpl-mini-line w45 mt2" style={{ background: '#f6c63d' }} />
+                    </div>
+                    <div style={{ marginTop: '4px', background: '#232326', borderRadius: '7px', padding: '4px' }}>
+                        <div className="tpl-mini-line w55" style={{ background: '#f6c63d', height: '4px' }} />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px', marginTop: '3px' }}>
+                            <div className="tpl-mini-line w100" style={{ background: '#f0cf6a' }} />
+                            <div className="tpl-mini-line w100" style={{ background: '#f0cf6a' }} />
+                        </div>
+                    </div>
+                </>
+            );
+        case 'premium-rose':
+            return (
+                <>
+                    <div style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.1fr', gap: '4px' }}>
+                        <div style={{ background: '#f2d9e6', borderRadius: '7px', height: '34px', border: '1px solid #e2c2d5' }} />
+                        <div>
+                            <div className="tpl-mini-line w80 bold" style={{ background: '#4f3b45', height: '4px' }} />
+                            <div className="tpl-mini-line w60 mt2" style={{ background: '#4f3b45' }} />
+                            <div className="tpl-mini-line w90 mt2" />
+                        </div>
+                    </div>
+                    <div style={{ marginTop: '4px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' }}>
+                        <div className="tpl-mini-line w95" />
+                        <div className="tpl-mini-line w95" />
+                        <div className="tpl-mini-line w85" style={{ background: '#d982ad' }} />
+                        <div className="tpl-mini-line w85" style={{ background: '#d982ad' }} />
+                    </div>
+                </>
+            );
+        case 'premium-emerald':
+            return (
+                <>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '3px' }}>
+                        <div>
+                            <div className="tpl-mini-line w80 bold" style={{ background: '#202428', height: '5px' }} />
+                            <div className="tpl-mini-line w60 mt2" style={{ background: '#202428' }} />
+                        </div>
+                        <div style={{ background: '#0f9d59', borderRadius: '5px', height: '18px' }} />
+                    </div>
+                    <div style={{ marginTop: '4px', background: '#eef0f2', borderRadius: '6px', padding: '4px' }}>
+                        <div className="tpl-mini-line w90" />
+                        <div className="tpl-mini-line w95 mt2" />
+                        <div className="tpl-mini-line w80" />
+                    </div>
+                </>
+            );
+        case 'premium-monogram':
+            return (
+                <>
+                    <div style={{ background: '#f5f1f4', borderRadius: '7px', padding: '4px', textAlign: 'center' }}>
+                        <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '1px solid #c8bda9', margin: '0 auto 2px', fontSize: '8px', lineHeight: '14px', color: '#6f6250' }}>km</div>
+                        <div className="tpl-mini-line w75" style={{ background: '#4f5660', margin: '0 auto', height: '4px' }} />
+                    </div>
+                    <div style={{ marginTop: '4px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' }}>
+                        <div className="tpl-mini-line w95" />
+                        <div className="tpl-mini-line w95" />
+                        <div className="tpl-mini-line w85" />
+                        <div className="tpl-mini-line w85" />
+                    </div>
+                </>
+            );
         default:
             return <div />;
     }

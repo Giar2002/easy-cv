@@ -37,11 +37,21 @@ export const TEMPLATES: TemplateConfig[] = [
     { id: 'timeline', name: 'Timeline', category: 'layout', atsScore: 3 },
     { id: 'magazine', name: 'Magazine', category: 'layout', atsScore: 2 },
     { id: 'sidebar-dark', name: 'Sidebar Dark', category: 'layout', atsScore: 2, popular: true },
+    // Premium (Paid-ready)
+    { id: 'premium-pop', name: 'Premium Pop', category: 'premium', atsScore: 2, badge: 'Premium' },
+    { id: 'premium-retro', name: 'Premium Retro', category: 'premium', atsScore: 2, badge: 'Premium' },
+    { id: 'premium-soft', name: 'Premium Soft', category: 'premium', atsScore: 3, badge: 'Premium' },
+    { id: 'premium-gallery', name: 'Premium Gallery', category: 'premium', atsScore: 3, badge: 'Premium' },
+    { id: 'premium-noir', name: 'Premium Noir', category: 'premium', atsScore: 2, badge: 'Premium' },
+    { id: 'premium-rose', name: 'Premium Rose', category: 'premium', atsScore: 3, badge: 'Premium' },
+    { id: 'premium-emerald', name: 'Premium Emerald', category: 'premium', atsScore: 4, badge: 'Premium' },
+    { id: 'premium-monogram', name: 'Premium Monogram', category: 'premium', atsScore: 4, badge: 'Premium' },
 ];
 
 export const TEMPLATE_CATEGORIES: Record<TemplateCategory, { name: string; icon: string; desc?: string }> = {
     all: { name: 'Semua Template', icon: '📋' },
     popular: { name: 'Populer', icon: '🔥', desc: 'Template paling populer' },
+    premium: { name: 'Premium', icon: '💎', desc: 'Template premium untuk paket berbayar' },
     ats: { name: 'ATS-Friendly', icon: '✅', desc: 'Optimized untuk ATS systems' },
     general: { name: 'General', icon: '📄', desc: 'Cocok untuk semua profesi' },
     creative: { name: 'Creative', icon: '🎨', desc: 'Design kreatif dan visual' },
@@ -57,4 +67,20 @@ export function getTemplateById(id: string): TemplateConfig | undefined {
 export function getTemplatesByCategory(category: TemplateCategory): TemplateConfig[] {
     if (category === 'all') return TEMPLATES;
     return TEMPLATES.filter(t => t.category === category);
+}
+
+export const DEFAULT_FREE_TEMPLATE_ID = 'modern';
+
+export function isPremiumTemplate(templateId: string): boolean {
+    return getTemplateById(templateId)?.category === 'premium';
+}
+
+export function canUseTemplate(templateId: string, isPremiumUser?: boolean): boolean {
+    if (!isPremiumTemplate(templateId)) return true;
+    return Boolean(isPremiumUser);
+}
+
+export function getAccessibleTemplateId(templateId: string, isPremiumUser?: boolean): string {
+    if (canUseTemplate(templateId, isPremiumUser)) return templateId;
+    return DEFAULT_FREE_TEMPLATE_ID;
 }

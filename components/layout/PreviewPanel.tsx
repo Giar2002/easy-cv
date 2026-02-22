@@ -3,11 +3,12 @@
 import { useCVStore } from '@/store/useCVStore';
 import TemplateRenderer from '@/components/preview/TemplateRenderer';
 import CVScoreBadge from '@/components/preview/CVScoreBadge';
-import { TEMPLATES } from '@/lib/templates';
+import { TEMPLATES, getAccessibleTemplateId } from '@/lib/templates';
 
 export default function PreviewPanel() {
     const settings = useCVStore(s => s.settings);
-    const templateName = TEMPLATES.find(t => t.id === settings.template)?.name || settings.template;
+    const activeTemplateId = getAccessibleTemplateId(settings.template, settings.isPremiumUser);
+    const templateName = TEMPLATES.find(t => t.id === activeTemplateId)?.name || activeTemplateId;
 
     return (
         <section className="preview-panel" id="previewPanel">

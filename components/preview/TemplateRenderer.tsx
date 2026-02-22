@@ -9,8 +9,12 @@ import MinimalistTemplate from '@/components/templates/MinimalistTemplate';
 import ATSTemplate from '@/components/templates/ATSTemplate';
 import CreativeTemplate from '@/components/templates/CreativeTemplate';
 import ExecutiveTemplate from '@/components/templates/ExecutiveTemplate';
+import SidebarDarkTemplate from '@/components/templates/SidebarDarkTemplate';
+import PremiumTemplate from '@/components/templates/PremiumTemplate';
+import MonogramTemplate from '@/components/templates/MonogramTemplate';
 import GenericTemplate from '@/components/templates/GenericTemplate';
 import { sanitizeFontFamily } from '@/lib/fonts';
+import { getAccessibleTemplateId } from '@/lib/templates';
 
 export default function TemplateRenderer() {
     const personal = useCVStore(s => s.personal);
@@ -31,6 +35,7 @@ export default function TemplateRenderer() {
     }, [settings.colorScheme]);
 
     const props = { data };
+    const activeTemplateId = getAccessibleTemplateId(settings.template, settings.isPremiumUser);
 
     const templateMap: Record<string, React.ReactNode> = {
         modern: <ModernTemplate {...props} />,
@@ -41,12 +46,21 @@ export default function TemplateRenderer() {
         'ats-structured': <ATSTemplate {...props} />,
         'ats-corporate': <ATSTemplate {...props} />,
         creative: <CreativeTemplate {...props} />,
-        'sidebar-dark': <CreativeTemplate {...props} />,
+        'sidebar-dark': <SidebarDarkTemplate {...props} />,
+        'premium-pop': <PremiumTemplate {...props} variant="premium-pop" />,
+        'premium-retro': <PremiumTemplate {...props} variant="premium-retro" />,
+        'premium-soft': <PremiumTemplate {...props} variant="premium-soft" />,
+        'premium-gallery': <PremiumTemplate {...props} variant="premium-gallery" />,
+        'premium-noir': <PremiumTemplate {...props} variant="premium-noir" />,
+        'premium-rose': <PremiumTemplate {...props} variant="premium-rose" />,
+        'premium-emerald': <PremiumTemplate {...props} variant="premium-emerald" />,
+        'premium-monogram': <PremiumTemplate {...props} variant="premium-monogram" />,
         designer: <ModernTemplate {...props} />,
+        monogram: <MonogramTemplate {...props} />,
         executive: <ExecutiveTemplate {...props} />,
     };
 
-    const component = templateMap[settings.template] || <GenericTemplate {...props} />;
+    const component = templateMap[activeTemplateId] || <GenericTemplate {...props} />;
     const fontFamily = sanitizeFontFamily(settings.fontFamily);
 
     return (
@@ -56,7 +70,7 @@ export default function TemplateRenderer() {
                     font-family: ${fontFamily} !important;
                 }
             `}</style>
-            <div id="cv-page" className={`cv-page template-${settings.template}`}
+            <div id="cv-page" className={`cv-page template-${activeTemplateId}`}
                 style={{
                     '--cv-accent': settings.colorScheme || '#6c63ff',
                     fontSize: `${typeof settings.fontSize === 'number' ? settings.fontSize : 12}pt`

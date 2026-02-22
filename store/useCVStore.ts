@@ -7,6 +7,7 @@ import {
     Skill, Project, Certification, Language, CVSettings
 } from '@/types/cv';
 import { DEFAULT_FONT_FAMILY, sanitizeFontFamily } from '@/lib/fonts';
+import { getAccessibleTemplateId } from '@/lib/templates';
 
 function uid(): string {
     return Math.random().toString(36).slice(2, 9);
@@ -21,6 +22,7 @@ const defaultSettings: CVSettings = {
     template: 'modern',
     showPhoto: true,
     colorScheme: '#6c63ff',
+    isPremiumUser: false,
     language: 'en',
     fontFamily: DEFAULT_FONT_FAMILY,
     fontSize: 12,
@@ -147,7 +149,17 @@ export const useCVStore = create<CVStore>()(
 
             setSettings: (data) => set(s => {
                 const merged = { ...s.settings, ...data };
-                return { settings: { ...merged, fontFamily: sanitizeFontFamily(merged.fontFamily) } };
+                const isPremiumUser = Boolean(merged.isPremiumUser);
+                const requestedTemplate = data.template || merged.template || defaultSettings.template;
+                const safeTemplate = getAccessibleTemplateId(requestedTemplate, isPremiumUser);
+
+                return {
+                    settings: {
+                        ...merged,
+                        template: safeTemplate,
+                        fontFamily: sanitizeFontFamily(merged.fontFamily)
+                    }
+                };
             }),
             completeOnboarding: () => set(s => ({ settings: { ...s.settings, hasCompletedOnboarding: true } })),
 
@@ -180,6 +192,9 @@ export const useCVStore = create<CVStore>()(
                     level: normalizeLanguageLevel(item.level),
                 }));
                 const mergedSettings = { ...s.settings, ...(data.settings || {}) };
+                const isPremiumUser = Boolean(mergedSettings.isPremiumUser);
+                const requestedTemplate = mergedSettings.template || defaultSettings.template;
+                const safeTemplate = getAccessibleTemplateId(requestedTemplate, isPremiumUser);
                 return {
                     personal: { ...defaultPersonal, ...(data.personal || {}) },
                     experience: normalize(data.experience || s.experience),
@@ -194,6 +209,7 @@ export const useCVStore = create<CVStore>()(
                     ),
                     settings: {
                         ...mergedSettings,
+                        template: safeTemplate,
                         fontFamily: sanitizeFontFamily(mergedSettings.fontFamily),
                     }
                 };
