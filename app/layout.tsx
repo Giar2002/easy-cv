@@ -1,10 +1,16 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
   title: "EasY CV — Bikin CV ATS Friendly Cepat & Profesional",
   description: "Buat CV profesional bahasa Indonesia & Inggris secara gratis. Mudah 'Isi CV'-mu dengan preview real-time, AI Asisten, dan ATS mode.",
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({

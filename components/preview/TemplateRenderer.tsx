@@ -16,6 +16,18 @@ import GenericTemplate from '@/components/templates/GenericTemplate';
 import { sanitizeFontFamily } from '@/lib/fonts';
 import { getAccessibleTemplateId } from '@/lib/templates';
 
+function normalizeRichTextArtifacts(value: string): string {
+    if (!value) return value;
+
+    return value
+        .replace(/\u00ad/g, '') // remove soft hyphen from pasted PDF/OCR text
+        .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])-\s*<\/p>\s*<p>\s*([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1$2')
+        .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])-\s*<br\s*\/?>\s*([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1$2')
+        .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])<\/p>\s*<p>\s*([a-zà-öø-ÿ])/g, '$1$2')
+        .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])-\s*\n\s*([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1$2')
+        .replace(/([A-Za-zÀ-ÖØ-öø-ÿ])\s*\n\s*([a-zà-öø-ÿ])/g, '$1$2');
+}
+
 export default function TemplateRenderer() {
     const personal = useCVStore(s => s.personal);
     const experience = useCVStore(s => s.experience);
@@ -26,7 +38,28 @@ export default function TemplateRenderer() {
     const languages = useCVStore(s => s.languages);
     const settings = useCVStore(s => s.settings);
 
-    const data: CVData = { personal, experience, education, skills, projects, certifications, languages, settings };
+    const data: CVData = {
+        personal: {
+            ...personal,
+            summary: normalizeRichTextArtifacts(personal.summary),
+        },
+        experience: experience.map(item => ({
+            ...item,
+            description: normalizeRichTextArtifacts(item.description),
+        })),
+        education: education.map(item => ({
+            ...item,
+            description: normalizeRichTextArtifacts(item.description),
+        })),
+        skills,
+        projects: projects.map(item => ({
+            ...item,
+            description: normalizeRichTextArtifacts(item.description),
+        })),
+        certifications,
+        languages,
+        settings,
+    };
 
     // Apply accent color as CSS variable on cv-page
     useEffect(() => {

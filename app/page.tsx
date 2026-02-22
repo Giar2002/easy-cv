@@ -39,30 +39,20 @@ export default function LandingPage() {
             </div>
             <span>EasY CV</span>
           </div>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <button className="btn btn-ghost btn-icon" onClick={toggleTheme} title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'} style={{ padding: '0.5rem' }}>
+          <div className="landing-nav-actions">
+            <button className="btn btn-ghost btn-icon" onClick={toggleTheme} title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}>
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
-            <div style={{ position: 'relative' }}>
+            <div className="language-select-wrap">
               <select
+                className="language-select"
                 value={language}
                 onChange={e => setSettings({ language: e.target.value as 'en' | 'id' })}
-                style={{
-                  padding: '0.4rem 2rem 0.4rem 1rem',
-                  borderRadius: '100px',
-                  cursor: 'pointer',
-                  background: 'var(--bg-panel)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border)',
-                  fontSize: '0.9rem',
-                  outline: 'none',
-                  appearance: 'none'
-                }}
               >
                 <option value="en">🇬🇧 EN</option>
                 <option value="id">🇮🇩 ID</option>
               </select>
-              <div style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-secondary)' }}>
+              <div className="language-select-chevron">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
               </div>
             </div>
