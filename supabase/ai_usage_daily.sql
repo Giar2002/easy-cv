@@ -11,12 +11,15 @@ create table if not exists public.ai_usage_daily (
   constraint ai_usage_daily_pkey primary key (anon_id, usage_date)
 );
 
+alter table public.ai_usage_daily enable row level security;
+
 create index if not exists ai_usage_daily_usage_date_idx
   on public.ai_usage_daily (usage_date);
 
 create or replace function public.touch_updated_at()
 returns trigger
 language plpgsql
+set search_path = public, pg_catalog
 as $$
 begin
   new.updated_at = now();
