@@ -1,7 +1,13 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getSupabaseServiceClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
 
-// Simple in-memory rate limiter (Note: in production Vercel/serverless, use Redis/Upstash)
+const ANON_COOKIE_NAME = 'easycv_anon_id';
+const DAILY_LIMIT = Number(process.env.AI_DAILY_LIMIT || 25);
+const DAILY_LIMIT_SAFE = Number.isFinite(DAILY_LIMIT) && DAILY_LIMIT > 0 ? Math.min(DAILY_LIMIT, 200) : 25;
+const USAGE_TABLE = process.env.SUPABASE_AI_USAGE_TABLE || 'ai_usage_daily';
+
+// Burst limiter in-memory (per anonymous user) to prevent spam
 const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
 const LIMIT = 5; // Max 5 requests
 const WINDOW_MS = 60 * 1000; // 1 minute window
@@ -21,23 +27,130 @@ function toParagraphHtml(text: string): string {
         .join('');
 }
 
-export async function POST(req: Request) {
+function getTodayUtc(): string {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function buildAnonId(seed?: string): { anonId: string; shouldSetCookie: boolean } {
+    const safeSeed = (seed || '').trim();
+    if (safeSeed && /^[a-zA-Z0-9_-]{8,64}$/.test(safeSeed)) {
+        return { anonId: safeSeed, shouldSetCookie: false };
+    }
+    return { anonId: crypto.randomUUID().replace(/-/g, ''), shouldSetCookie: true };
+}
+
+function withAnonCookie(
+    response: NextResponse,
+    anonId: string,
+    shouldSetCookie: boolean
+): NextResponse {
+    if (shouldSetCookie) {
+        response.cookies.set({
+            name: ANON_COOKIE_NAME,
+            value: anonId,
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 60 * 60 * 24 * 365,
+            path: '/',
+        });
+    }
+    return response;
+}
+
+type QuotaResult =
+    | { ok: true; remaining: number }
+    | { ok: false; reason: 'daily-limit' | 'unavailable'; message: string };
+
+async function consumeDailyQuota(anonId: string): Promise<QuotaResult> {
+    if (!hasSupabaseServerEnv()) {
+        return { ok: false, reason: 'unavailable', message: 'Supabase not configured.' };
+    }
+
+    const supabase = getSupabaseServiceClient();
+    if (!supabase) {
+        return { ok: false, reason: 'unavailable', message: 'Supabase client init failed.' };
+    }
+
+    const today = getTodayUtc();
+    const { data: existing, error: readError } = await supabase
+        .from(USAGE_TABLE)
+        .select('requests')
+        .eq('anon_id', anonId)
+        .eq('usage_date', today)
+        .maybeSingle();
+
+    if (readError) {
+        return { ok: false, reason: 'unavailable', message: readError.message };
+    }
+
+    if (!existing) {
+        const { error: insertError } = await supabase
+            .from(USAGE_TABLE)
+            .insert({ anon_id: anonId, usage_date: today, requests: 1 });
+        if (insertError) {
+            return { ok: false, reason: 'unavailable', message: insertError.message };
+        }
+        return { ok: true, remaining: DAILY_LIMIT_SAFE - 1 };
+    }
+
+    const current = Number(existing.requests) || 0;
+    if (current >= DAILY_LIMIT_SAFE) {
+        return {
+            ok: false,
+            reason: 'daily-limit',
+            message: 'Batas gratis penggunaan AI harian untuk akun ini sudah habis. Coba lagi besok.',
+        };
+    }
+
+    const next = current + 1;
+    const { error: updateError } = await supabase
+        .from(USAGE_TABLE)
+        .update({ requests: next })
+        .eq('anon_id', anonId)
+        .eq('usage_date', today);
+
+    if (updateError) {
+        return { ok: false, reason: 'unavailable', message: updateError.message };
+    }
+
+    return { ok: true, remaining: Math.max(0, DAILY_LIMIT_SAFE - next) };
+}
+
+export async function POST(req: NextRequest) {
     try {
-        const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
+        const { anonId, shouldSetCookie } = buildAnonId(req.cookies.get(ANON_COOKIE_NAME)?.value);
+
+        const quota = await consumeDailyQuota(anonId);
+        if (!quota.ok && quota.reason === 'daily-limit') {
+            return withAnonCookie(
+                NextResponse.json({ error: quota.message }, { status: 429 }),
+                anonId,
+                shouldSetCookie
+            );
+        }
+        if (!quota.ok && quota.reason === 'unavailable') {
+            console.warn('[AI quota] Supabase unavailable, fallback to burst limiter only:', quota.message);
+        }
+
         const now = Date.now();
-        const limitData = rateLimitMap.get(ip);
+        const limitData = rateLimitMap.get(anonId);
 
         if (limitData) {
             if (now > limitData.resetTime) {
-                rateLimitMap.set(ip, { count: 1, resetTime: now + WINDOW_MS });
+                rateLimitMap.set(anonId, { count: 1, resetTime: now + WINDOW_MS });
             } else if (limitData.count >= LIMIT) {
-                return NextResponse.json({ error: 'Terlalu banyak permintaan. Tunggu 1 menit.' }, { status: 429 });
+                return withAnonCookie(
+                    NextResponse.json({ error: 'Terlalu banyak permintaan. Tunggu 1 menit.' }, { status: 429 }),
+                    anonId,
+                    shouldSetCookie
+                );
             } else {
                 limitData.count++;
-                rateLimitMap.set(ip, limitData);
+                rateLimitMap.set(anonId, limitData);
             }
         } else {
-            rateLimitMap.set(ip, { count: 1, resetTime: now + WINDOW_MS });
+            rateLimitMap.set(anonId, { count: 1, resetTime: now + WINDOW_MS });
         }
 
         const payload = await req.json();
@@ -46,16 +159,28 @@ export async function POST(req: Request) {
 
         // Token length safeguard
         if (!text || text.length > 2000) {
-            return NextResponse.json({ error: 'Teks terlalu panjang (Maksimal 2000 karakter)' }, { status: 400 });
+            return withAnonCookie(
+                NextResponse.json({ error: 'Teks terlalu panjang (Maksimal 2000 karakter)' }, { status: 400 }),
+                anonId,
+                shouldSetCookie
+            );
         }
 
         // Remove HTML tags for AI processing to avoid formatting glitches
         const plainText = text.replace(/<[^>]*>?/gm, '').trim();
         if (!plainText) {
-            return NextResponse.json({ error: 'Teks tidak boleh kosong' }, { status: 400 });
+            return withAnonCookie(
+                NextResponse.json({ error: 'Teks tidak boleh kosong' }, { status: 400 }),
+                anonId,
+                shouldSetCookie
+            );
         }
         if (plainText.length > 2000) {
-            return NextResponse.json({ error: 'Teks terlalu panjang (Maksimal 2000 karakter)' }, { status: 400 });
+            return withAnonCookie(
+                NextResponse.json({ error: 'Teks terlalu panjang (Maksimal 2000 karakter)' }, { status: 400 }),
+                anonId,
+                shouldSetCookie
+            );
         }
 
         // Look for GEMINI_API_KEY environment variable. 
@@ -90,7 +215,11 @@ export async function POST(req: Request) {
 
             // Simulating network delay
             await new Promise(resolve => setTimeout(resolve, 1500));
-            return NextResponse.json({ result: mockResult });
+            return withAnonCookie(
+                NextResponse.json({ result: mockResult }),
+                anonId,
+                shouldSetCookie
+            );
         }
 
         // plainText handled above
@@ -121,7 +250,11 @@ export async function POST(req: Request) {
             generatedText = toParagraphHtml(generatedText);
         }
 
-        return NextResponse.json({ result: generatedText });
+        return withAnonCookie(
+            NextResponse.json({ result: generatedText }),
+            anonId,
+            shouldSetCookie
+        );
     } catch (error: unknown) {
         console.error('AI API Error:', error);
         const message = getErrorMessage(error);
@@ -132,9 +265,10 @@ export async function POST(req: Request) {
 
         // Handle 429 quota exhaustion gracefully
         if (statusCode === 429 || message.includes('429') || message.includes('Quota exceeded')) {
-            return NextResponse.json({
-                error: 'Batas gratis penggunaan AI harian telah habis. Silakan coba lagi besok.'
-            }, { status: 429 });
+            return NextResponse.json(
+                { error: 'Kuota Gemini project sedang habis. Coba lagi nanti atau besok.' },
+                { status: 429 }
+            );
         }
 
         return NextResponse.json({ error: message }, { status: 500 });

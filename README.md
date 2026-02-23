@@ -41,6 +41,21 @@ SUPABASE_STORAGE_BUCKET=cv-photos
 
 6. Restart server dev setelah ubah env.
 
+### Setup limit AI per user (direkomendasikan)
+
+1. Buka Supabase SQL Editor.
+2. Jalankan SQL dari file `supabase/ai_usage_daily.sql`.
+3. Pastikan env ini terisi:
+
+```env
+AI_DAILY_LIMIT=25
+SUPABASE_AI_USAGE_TABLE=ai_usage_daily
+```
+
+Catatan:
+- Limit harian dihitung per `anon_id` cookie per browser (UTC day).
+- Jika tabel belum dibuat atau Supabase tidak tersedia, app fallback ke burst limit 1 menit untuk mencegah spam.
+
 ## Environment Variables
 
 Lihat `.env.example`:
@@ -50,6 +65,8 @@ Lihat `.env.example`:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: anon/public key.
 - `SUPABASE_SERVICE_ROLE_KEY`: key server-only untuk upload ke storage.
 - `SUPABASE_STORAGE_BUCKET`: nama bucket foto.
+- `AI_DAILY_LIMIT`: batas request AI per hari per user anonim (default `25`).
+- `SUPABASE_AI_USAGE_TABLE`: nama tabel kuota AI (default `ai_usage_daily`).
 
 ## Catatan Keamanan
 
