@@ -6,11 +6,24 @@ const ANON_COOKIE_NAME = 'easycv_anon_id';
 const DAILY_LIMIT = Number(process.env.AI_DAILY_LIMIT || 25);
 const DAILY_LIMIT_SAFE = Number.isFinite(DAILY_LIMIT) && DAILY_LIMIT > 0 ? Math.min(DAILY_LIMIT, 200) : 25;
 const USAGE_TABLE = process.env.SUPABASE_AI_USAGE_TABLE || 'ai_usage_daily';
+const FEATURE_LIMIT_SURVEY = Number(process.env.AI_LIMIT_SURVEY || 1);
+const FEATURE_LIMIT_SUMMARY = Number(process.env.AI_LIMIT_SUMMARY || 2);
+const FEATURE_LIMIT_EXPERIENCE = Number(process.env.AI_LIMIT_EXPERIENCE || 2);
+const ALLOW_CLIENT_PREMIUM_SIM = process.env.AI_ALLOW_CLIENT_PREMIUM_SIM !== 'false';
 
 // Burst limiter in-memory (per anonymous user) to prevent spam
 const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
 const LIMIT = 5; // Max 5 requests
 const WINDOW_MS = 60 * 1000; // 1 minute window
+
+type AIQuotaFeature = 'survey' | 'summary' | 'experience' | 'skills' | 'project' | 'general';
+type FeatureColumn = 'survey_requests' | 'summary_requests' | 'experience_requests';
+
+const FEATURE_COLUMN_MAP: Partial<Record<AIQuotaFeature, FeatureColumn>> = {
+    survey: 'survey_requests',
+    summary: 'summary_requests',
+    experience: 'experience_requests',
+};
 
 function getErrorMessage(error: unknown): string {
     if (error instanceof Error && error.message) return error.message;
@@ -29,6 +42,60 @@ function toParagraphHtml(text: string): string {
 
 function getTodayUtc(): string {
     return new Date().toISOString().slice(0, 10);
+}
+
+function sanitizeLimit(value: number, fallback: number): number {
+    if (!Number.isFinite(value) || value <= 0) return fallback;
+    return Math.min(Math.floor(value), 20);
+}
+
+const FEATURE_LIMITS = {
+    survey: sanitizeLimit(FEATURE_LIMIT_SURVEY, 1),
+    summary: sanitizeLimit(FEATURE_LIMIT_SUMMARY, 2),
+    experience: sanitizeLimit(FEATURE_LIMIT_EXPERIENCE, 2),
+} as const;
+
+function normalizeFeature(rawFeature: unknown, action: string): AIQuotaFeature {
+    if (typeof rawFeature === 'string') {
+        const normalized = rawFeature.trim().toLowerCase();
+        if (
+            normalized === 'survey' ||
+            normalized === 'summary' ||
+            normalized === 'experience' ||
+            normalized === 'skills' ||
+            normalized === 'project' ||
+            normalized === 'general'
+        ) {
+            return normalized;
+        }
+    }
+    if (action === 'generate-skills') return 'skills';
+    return 'general';
+}
+
+function getFeatureLimit(feature: AIQuotaFeature): number | null {
+    if (feature === 'survey') return FEATURE_LIMITS.survey;
+    if (feature === 'summary') return FEATURE_LIMITS.summary;
+    if (feature === 'experience') return FEATURE_LIMITS.experience;
+    return null;
+}
+
+function getFeatureLimitMessage(feature: AIQuotaFeature): string {
+    if (feature === 'survey') {
+        return `Batas AI survey sudah habis untuk hari ini (${FEATURE_LIMITS.survey}x).`;
+    }
+    if (feature === 'summary') {
+        return `Batas AI Profile Summary sudah habis untuk hari ini (${FEATURE_LIMITS.summary}x).`;
+    }
+    if (feature === 'experience') {
+        return `Batas AI Description Experience sudah habis untuk hari ini (${FEATURE_LIMITS.experience}x).`;
+    }
+    return 'Batas AI fitur ini sudah habis untuk hari ini.';
+}
+
+function isPremiumRequest(rawValue: unknown): boolean {
+    if (!ALLOW_CLIENT_PREMIUM_SIM) return false;
+    return rawValue === true;
 }
 
 function buildAnonId(seed?: string): { anonId: string; shouldSetCookie: boolean } {
@@ -59,19 +126,14 @@ function withAnonCookie(
 }
 
 type QuotaResult =
-    | { ok: true; remaining: number }
-    | { ok: false; reason: 'daily-limit' | 'unavailable'; message: string };
+    | { ok: true; remaining: number; featureRemaining: number | null }
+    | { ok: false; reason: 'daily-limit' | 'feature-limit' | 'unavailable'; message: string };
 
-async function consumeDailyQuota(anonId: string): Promise<QuotaResult> {
-    if (!hasSupabaseServerEnv()) {
-        return { ok: false, reason: 'unavailable', message: 'Supabase not configured.' };
-    }
-
+async function consumeDailyQuotaLegacy(anonId: string): Promise<QuotaResult> {
     const supabase = getSupabaseServiceClient();
     if (!supabase) {
         return { ok: false, reason: 'unavailable', message: 'Supabase client init failed.' };
     }
-
     const today = getTodayUtc();
     const { data: existing, error: readError } = await supabase
         .from(USAGE_TABLE)
@@ -91,7 +153,7 @@ async function consumeDailyQuota(anonId: string): Promise<QuotaResult> {
         if (insertError) {
             return { ok: false, reason: 'unavailable', message: insertError.message };
         }
-        return { ok: true, remaining: DAILY_LIMIT_SAFE - 1 };
+        return { ok: true, remaining: DAILY_LIMIT_SAFE - 1, featureRemaining: null };
     }
 
     const current = Number(existing.requests) || 0;
@@ -114,24 +176,117 @@ async function consumeDailyQuota(anonId: string): Promise<QuotaResult> {
         return { ok: false, reason: 'unavailable', message: updateError.message };
     }
 
-    return { ok: true, remaining: Math.max(0, DAILY_LIMIT_SAFE - next) };
+    return { ok: true, remaining: Math.max(0, DAILY_LIMIT_SAFE - next), featureRemaining: null };
+}
+
+async function consumeDailyQuota(anonId: string, feature: AIQuotaFeature): Promise<QuotaResult> {
+    if (!hasSupabaseServerEnv()) {
+        return { ok: false, reason: 'unavailable', message: 'Supabase not configured.' };
+    }
+
+    const supabase = getSupabaseServiceClient();
+    if (!supabase) {
+        return { ok: false, reason: 'unavailable', message: 'Supabase client init failed.' };
+    }
+
+    const today = getTodayUtc();
+    const { data: existing, error: readError } = await supabase
+        .from(USAGE_TABLE)
+        .select('requests,survey_requests,summary_requests,experience_requests')
+        .eq('anon_id', anonId)
+        .eq('usage_date', today)
+        .maybeSingle();
+
+    if (readError) {
+        if (
+            readError.message.includes('survey_requests') ||
+            readError.message.includes('summary_requests') ||
+            readError.message.includes('experience_requests')
+        ) {
+            return consumeDailyQuotaLegacy(anonId);
+        }
+        return { ok: false, reason: 'unavailable', message: readError.message };
+    }
+
+    const featureColumn = FEATURE_COLUMN_MAP[feature];
+    const featureLimit = getFeatureLimit(feature);
+
+    if (!existing) {
+        const insertPayload: Record<string, string | number> = {
+            anon_id: anonId,
+            usage_date: today,
+            requests: 1,
+        };
+        if (featureColumn) {
+            insertPayload[featureColumn] = 1;
+        }
+        const { error: insertError } = await supabase
+            .from(USAGE_TABLE)
+            .insert(insertPayload);
+        if (insertError) {
+            return { ok: false, reason: 'unavailable', message: insertError.message };
+        }
+        return {
+            ok: true,
+            remaining: DAILY_LIMIT_SAFE - 1,
+            featureRemaining: featureLimit && featureColumn ? Math.max(0, featureLimit - 1) : null,
+        };
+    }
+
+    const current = Number(existing.requests) || 0;
+    if (current >= DAILY_LIMIT_SAFE) {
+        return {
+            ok: false,
+            reason: 'daily-limit',
+            message: 'Batas gratis penggunaan AI harian untuk akun ini sudah habis. Coba lagi besok.',
+        };
+    }
+
+    let currentFeatureUsage = 0;
+    if (featureColumn) {
+        currentFeatureUsage = Number((existing as Record<string, unknown>)[featureColumn]) || 0;
+    }
+
+    if (featureLimit && currentFeatureUsage >= featureLimit) {
+        return {
+            ok: false,
+            reason: 'feature-limit',
+            message: getFeatureLimitMessage(feature),
+        };
+    }
+
+    const next = current + 1;
+    const updatePayload: Record<string, number> = { requests: next };
+    if (featureColumn) {
+        updatePayload[featureColumn] = currentFeatureUsage + 1;
+    }
+
+    const { error: updateError } = await supabase
+        .from(USAGE_TABLE)
+        .update(updatePayload)
+        .eq('anon_id', anonId)
+        .eq('usage_date', today);
+
+    if (updateError) {
+        return { ok: false, reason: 'unavailable', message: updateError.message };
+    }
+
+    return {
+        ok: true,
+        remaining: Math.max(0, DAILY_LIMIT_SAFE - next),
+        featureRemaining: featureLimit ? Math.max(0, featureLimit - (currentFeatureUsage + 1)) : null,
+    };
 }
 
 export async function POST(req: NextRequest) {
     try {
         const { anonId, shouldSetCookie } = buildAnonId(req.cookies.get(ANON_COOKIE_NAME)?.value);
 
-        const quota = await consumeDailyQuota(anonId);
-        if (!quota.ok && quota.reason === 'daily-limit') {
-            return withAnonCookie(
-                NextResponse.json({ error: quota.message }, { status: 429 }),
-                anonId,
-                shouldSetCookie
-            );
-        }
-        if (!quota.ok && quota.reason === 'unavailable') {
-            console.warn('[AI quota] Supabase unavailable, fallback to burst limiter only:', quota.message);
-        }
+        const payload = await req.json();
+        const text = typeof payload?.text === 'string' ? payload.text : '';
+        const action = typeof payload?.action === 'string' ? payload.action : '';
+        const feature = normalizeFeature(payload?.feature, action);
+        const isPremiumUser = isPremiumRequest(payload?.isPremiumUser);
 
         const now = Date.now();
         const limitData = rateLimitMap.get(anonId);
@@ -153,9 +308,19 @@ export async function POST(req: NextRequest) {
             rateLimitMap.set(anonId, { count: 1, resetTime: now + WINDOW_MS });
         }
 
-        const payload = await req.json();
-        const text = typeof payload?.text === 'string' ? payload.text : '';
-        const action = typeof payload?.action === 'string' ? payload.action : '';
+        if (!isPremiumUser) {
+            const quota = await consumeDailyQuota(anonId, feature);
+            if (!quota.ok && (quota.reason === 'daily-limit' || quota.reason === 'feature-limit')) {
+                return withAnonCookie(
+                    NextResponse.json({ error: quota.message }, { status: 429 }),
+                    anonId,
+                    shouldSetCookie
+                );
+            }
+            if (!quota.ok && quota.reason === 'unavailable') {
+                console.warn('[AI quota] Supabase unavailable, fallback to burst limiter only:', quota.message);
+            }
+        }
 
         // Token length safeguard
         if (!text || text.length > 2000) {

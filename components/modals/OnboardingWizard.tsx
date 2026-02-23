@@ -77,7 +77,9 @@ export default function OnboardingWizard() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         text: summaryPrompt,
-                        action: 'enhance'
+                        action: 'enhance',
+                        feature: 'survey',
+                        isPremiumUser: settings.isPremiumUser
                     })
                 }),
                 fetch('/api/ai', {
@@ -85,7 +87,9 @@ export default function OnboardingWizard() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         text: skillsPrompt,
-                        action: 'generate-skills'
+                        action: 'generate-skills',
+                        feature: 'skills',
+                        isPremiumUser: settings.isPremiumUser
                     })
                 })
             ]);

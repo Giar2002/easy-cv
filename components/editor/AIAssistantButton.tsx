@@ -8,10 +8,12 @@ import { useCVStore } from '@/store/useCVStore';
 interface AIAssistantButtonProps {
     value: string;
     onApply: (newValue: string) => void;
+    feature?: 'summary' | 'experience' | 'survey' | 'skills' | 'project' | 'general';
 }
 
-export default function AIAssistantButton({ value, onApply }: AIAssistantButtonProps) {
+export default function AIAssistantButton({ value, onApply, feature = 'general' }: AIAssistantButtonProps) {
     const language = useCVStore(s => s.settings.language) || 'id';
+    const isPremiumUser = Boolean(useCVStore(s => s.settings.isPremiumUser));
     const isEn = language === 'en';
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState('');
@@ -41,7 +43,7 @@ export default function AIAssistantButton({ value, onApply }: AIAssistantButtonP
             const res = await fetch('/api/ai', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: value, action: action })
+                body: JSON.stringify({ text: value, action: action, feature, isPremiumUser })
             });
             const data = await res.json();
 

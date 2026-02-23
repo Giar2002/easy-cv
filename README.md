@@ -50,10 +50,21 @@ SUPABASE_STORAGE_BUCKET=cv-photos
 ```env
 AI_DAILY_LIMIT=25
 SUPABASE_AI_USAGE_TABLE=ai_usage_daily
+AI_LIMIT_SURVEY=1
+AI_LIMIT_SUMMARY=2
+AI_LIMIT_EXPERIENCE=2
+AI_ALLOW_CLIENT_PREMIUM_SIM=true
 ```
 
 Catatan:
 - Limit harian dihitung per `anon_id` cookie per browser (UTC day).
+- Limit fitur default:
+  - Survey AI: `1x/hari`
+  - Profile Summary AI: `2x/hari`
+  - Experience Description AI: `2x/hari`
+  - Bisa diubah lewat env di atas.
+- Limit hanya dikenakan ke user gratis. User premium melewati kuota harian/fitur.
+- Pada mode sekarang, premium mengikuti flag `isPremiumUser` dari client (untuk simulasi).
 - Jika tabel belum dibuat atau Supabase tidak tersedia, app fallback ke burst limit 1 menit untuk mencegah spam.
 
 ## Environment Variables
@@ -67,6 +78,10 @@ Lihat `.env.example`:
 - `SUPABASE_STORAGE_BUCKET`: nama bucket foto.
 - `AI_DAILY_LIMIT`: batas request AI per hari per user anonim (default `25`).
 - `SUPABASE_AI_USAGE_TABLE`: nama tabel kuota AI (default `ai_usage_daily`).
+- `AI_LIMIT_SURVEY`: batas AI untuk onboarding survey per hari (default `1`).
+- `AI_LIMIT_SUMMARY`: batas AI untuk profile summary per hari (default `2`).
+- `AI_LIMIT_EXPERIENCE`: batas AI untuk description work experience per hari (default `2`).
+- `AI_ALLOW_CLIENT_PREMIUM_SIM`: izinkan bypass limit dari flag premium di client (default `true`; set `false` jika ingin mode ketat production).
 
 ## Catatan Keamanan
 

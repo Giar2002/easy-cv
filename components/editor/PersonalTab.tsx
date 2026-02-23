@@ -148,7 +148,7 @@ export default function PersonalTab() {
                 <div className="form-group full-width">
                     <label htmlFor="summary" style={{ display: 'flex', alignItems: 'center' }}>
                         {t.profileSummary} <small style={{ fontWeight: 'normal', fontSize: '0.8em', marginLeft: 5, color: 'var(--text-muted)' }}>{t.min10Chars}</small>
-                        <AIAssistantButton value={personal.summary} onApply={val => setPersonal({ summary: val })} />
+                        <AIAssistantButton feature="summary" value={personal.summary} onApply={val => setPersonal({ summary: val })} />
                     </label>
                     <RichTextInput
                         value={personal.summary}

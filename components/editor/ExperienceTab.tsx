@@ -61,7 +61,7 @@ function SortableEntryCard({ exp, onUpdate, onRemove, t }: {
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                     <label style={{ display: 'flex', alignItems: 'center' }}>
                         {t.description}
-                        <AIAssistantButton value={exp.description} onApply={val => onUpdate({ description: val })} />
+                        <AIAssistantButton feature="experience" value={exp.description} onApply={val => onUpdate({ description: val })} />
                     </label>
                     <RichTextInput
                         value={exp.description}
