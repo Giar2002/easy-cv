@@ -32,3 +32,4 @@ create trigger ai_usage_daily_touch_updated_at
 before update on public.ai_usage_daily
 for each row
 execute function public.touch_updated_at();
+
