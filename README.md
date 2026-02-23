@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EasY CV
 
-## Getting Started
+CV builder berbasis Next.js dengan preview real-time, AI helper, dan 38 template (termasuk kategori premium).
 
-First, run the development server:
+## Jalankan Lokal
 
 ```bash
+npm install --legacy-peer-deps
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Mode Penyimpanan Data
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+App ini sekarang mendukung 2 mode:
 
-## Learn More
+1. `Local mode` (default)
+- Data CV disimpan di browser (`localStorage`, key: `cv-builder-state`).
+- Upload foto disimpan sebagai base64 lokal.
 
-To learn more about Next.js, take a look at the following resources:
+2. `Supabase mode` (opsional)
+- Data tetap bisa lokal untuk saat ini.
+- Upload foto dikirim ke Supabase Storage via API route `app/api/upload-photo/route.ts`.
+- Jika upload cloud gagal, otomatis fallback ke penyimpanan lokal.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Setup Supabase (Opsional)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Buat project di Supabase.
+2. Buat bucket Storage, default nama: `cv-photos`.
+3. Set bucket sebagai `Public` jika ingin URL foto langsung bisa dipakai.
+4. Copy env dari `.env.example` ke `.env.local`.
+5. Isi value berikut:
 
-## Deploy on Vercel
+```env
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+SUPABASE_STORAGE_BUCKET=cv-photos
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+6. Restart server dev setelah ubah env.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Environment Variables
+
+Lihat `.env.example`:
+
+- `GEMINI_API_KEY`: untuk AI assistant.
+- `NEXT_PUBLIC_SUPABASE_URL`: URL project Supabase.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: anon/public key.
+- `SUPABASE_SERVICE_ROLE_KEY`: key server-only untuk upload ke storage.
+- `SUPABASE_STORAGE_BUCKET`: nama bucket foto.
+
+## Catatan Keamanan
+
+- `SUPABASE_SERVICE_ROLE_KEY` hanya dipakai di server (`lib/supabase/server.ts`), jangan expose ke client.
+- File foto divalidasi maksimal `2MB` dan mime type image sebelum upload.

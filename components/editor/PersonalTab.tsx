@@ -6,8 +6,18 @@ import { getTranslations } from '@/lib/i18n';
 import RichTextInput from './RichTextInput';
 import AIAssistantButton from './AIAssistantButton';
 import toast from 'react-hot-toast';
+import { hasSupabaseClientEnv } from '@/lib/supabase/client';
 
 const MAX_PHOTO_SIZE_BYTES = 2 * 1024 * 1024;
+
+function readAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => resolve((ev.target?.result as string) || '');
+        reader.onerror = () => reject(new Error('Gagal membaca file gambar.'));
+        reader.readAsDataURL(file);
+    });
+}
 
 export default function PersonalTab() {
     const personal = useCVStore(s => s.personal);
@@ -17,7 +27,7 @@ export default function PersonalTab() {
     const isEn = language === 'en';
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (!file) return;
         if (!file.type.startsWith('image/')) {
@@ -34,11 +44,45 @@ export default function PersonalTab() {
             e.target.value = '';
             return;
         }
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            setPersonal({ photo: ev.target?.result as string });
-        };
-        reader.readAsDataURL(file);
+
+        try {
+            if (hasSupabaseClientEnv()) {
+                const formData = new FormData();
+                formData.append('photo', file);
+
+                const res = await fetch('/api/upload-photo', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data?.url) {
+                    throw new Error(data?.error || 'Gagal upload foto ke cloud.');
+                }
+
+                setPersonal({ photo: data.url as string });
+                toast.success(
+                    isEn
+                        ? 'Photo uploaded to cloud storage.'
+                        : 'Foto berhasil diupload ke cloud storage.'
+                );
+            } else {
+                const localDataUrl = await readAsDataUrl(file);
+                setPersonal({ photo: localDataUrl });
+            }
+        } catch (error: unknown) {
+            const localDataUrl = await readAsDataUrl(file);
+            setPersonal({ photo: localDataUrl });
+            const message = error instanceof Error ? error.message : '';
+
+            toast.error(
+                isEn
+                    ? `Cloud upload failed. Saved locally instead.${message ? ` ${message}` : ''}`
+                    : `Upload cloud gagal. Disimpan lokal sebagai fallback.${message ? ` ${message}` : ''}`
+            );
+        } finally {
+            e.target.value = '';
+        }
     }
 
     return (
