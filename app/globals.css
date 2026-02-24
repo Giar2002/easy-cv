@@ -6259,6 +6259,154 @@ select.form-group,
     font-size: 0.85em;
 }
 
+/* --- Landing Promo Popup --- */
+.landing-promo-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(9, 10, 18, 0.62);
+    backdrop-filter: blur(4px);
+}
+
+.landing-promo-card {
+    position: relative;
+    width: min(760px, 100%);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 1.4rem;
+}
+
+.landing-promo-card .hero-badge {
+    margin-bottom: 0.8rem;
+}
+
+.landing-promo-card h3 {
+    font-size: clamp(1.2rem, 2.8vw, 1.7rem);
+    margin-bottom: 0.35rem;
+}
+
+.landing-promo-card p {
+    color: var(--text-secondary);
+    margin-bottom: 0.95rem;
+}
+
+.landing-promo-close {
+    position: absolute;
+    right: 0.7rem;
+    top: 0.65rem;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.landing-promo-close:hover {
+    color: var(--text-primary);
+    border-color: var(--accent);
+}
+
+.landing-promo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-top: 0.85rem;
+}
+
+.landing-promo-plan {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-panel);
+    padding: 0.9rem;
+}
+
+.landing-promo-plan h4 {
+    font-size: 1rem;
+    margin-bottom: 0.65rem;
+}
+
+.landing-promo-plan ul {
+    list-style: none;
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+}
+
+.landing-promo-plan li {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.35;
+    padding-left: 1rem;
+    position: relative;
+}
+
+.landing-promo-plan li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 0.34rem;
+    height: 0.34rem;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+.landing-promo-plan.featured {
+    border-color: rgba(108, 99, 255, 0.55);
+    background: linear-gradient(180deg, rgba(108, 99, 255, 0.16), rgba(108, 99, 255, 0.04));
+}
+
+.landing-promo-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .landing-promo-card {
+        padding: 1rem;
+    }
+
+    .landing-promo-grid {
+        grid-template-columns: 1fr;
+        gap: 0.7rem;
+    }
+
+    .landing-promo-actions {
+        justify-content: stretch;
+    }
+
+    .landing-promo-actions .btn {
+        flex: 1 1 180px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .landing-promo-overlay {
+        padding: 0.7rem;
+    }
+
+    .landing-promo-card {
+        width: 100%;
+        padding: 0.9rem;
+    }
+}
+
 /* --- Pricing Page --- */
 .pricing-page {
     max-width: 1100px;

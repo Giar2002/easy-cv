@@ -1,26 +1,82 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCVStore } from '@/store/useCVStore';
 import { getTranslations } from '@/lib/i18n';
 import { Moon, Sun } from 'lucide-react';
+
+const PROMO_HIDE_UNTIL_KEY = 'easycv_promo_hidden_until';
 
 export default function LandingPage() {
   const settings = useCVStore(s => s.settings);
   const setSettings = useCVStore(s => s.setSettings);
   const language = settings.language;
   const theme = settings.theme || 'light';
+  const isEn = language === 'en';
   const t = getTranslations(language);
+  const [showPromo, setShowPromo] = useState(false);
 
   // Apply theme class to document properties
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    let hiddenUntil = 0;
+    try {
+      hiddenUntil = Number(localStorage.getItem(PROMO_HIDE_UNTIL_KEY) || 0);
+    } catch {
+      hiddenUntil = 0;
+    }
+    if (Date.now() < hiddenUntil) return;
+
+    const timer = window.setTimeout(() => setShowPromo(true), 1200);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   function toggleTheme() {
     setSettings({ theme: theme === 'light' ? 'dark' : 'light' });
   }
+
+  function closePromo() {
+    setShowPromo(false);
+  }
+
+  function closePromoToday() {
+    try {
+      localStorage.setItem(PROMO_HIDE_UNTIL_KEY, String(Date.now() + 24 * 60 * 60 * 1000));
+    } catch {
+      // Ignore storage errors (private mode, etc.)
+    }
+    setShowPromo(false);
+  }
+
+  const promo = isEn
+    ? {
+      badge: 'Limited-Time Offer',
+      title: 'Free vs Premium in EasY CV',
+      subtitle: 'Start free, upgrade only when you need more power.',
+      free: 'Free',
+      premium: 'Premium',
+      freeItems: ['1 active CV', 'Daily AI limits', '1 PDF download/day', 'Free templates'],
+      premiumItems: ['Up to 10 CVs', 'Higher AI limits', 'Unlimited PDF downloads', 'Premium templates + cloud sync'],
+      later: 'Maybe later',
+      hideToday: "Don't show today",
+      viewPricing: 'View Pricing',
+    }
+    : {
+      badge: 'Penawaran Terbatas',
+      title: 'Perbandingan Free vs Premium',
+      subtitle: 'Mulai gratis, upgrade saat butuh fitur lebih lengkap.',
+      free: 'Gratis',
+      premium: 'Premium',
+      freeItems: ['1 CV aktif', 'Kuota AI harian terbatas', '1 download PDF/hari', 'Template gratis'],
+      premiumItems: ['Maksimal 10 CV', 'Limit AI lebih tinggi', 'Download PDF tanpa batas', 'Template premium + cloud sync'],
+      later: 'Nanti saja',
+      hideToday: 'Sembunyikan hari ini',
+      viewPricing: 'Lihat Harga',
+    };
 
   return (
     <div className={`landing-body ${theme}`}>
@@ -295,6 +351,46 @@ export default function LandingPage() {
           <div className="footer-copyright">{t.footerCopyright}</div>
         </div>
       </footer>
+
+      {showPromo && (
+        <div className="landing-promo-overlay" role="dialog" aria-modal="true" aria-labelledby="landingPromoTitle">
+          <div className="landing-promo-card">
+            <button type="button" className="landing-promo-close" onClick={closePromo} aria-label={isEn ? 'Close' : 'Tutup'}>
+              ×
+            </button>
+            <span className="hero-badge">{promo.badge}</span>
+            <h3 id="landingPromoTitle">{promo.title}</h3>
+            <p>{promo.subtitle}</p>
+
+            <div className="landing-promo-grid">
+              <article className="landing-promo-plan">
+                <h4>{promo.free}</h4>
+                <ul>
+                  {promo.freeItems.map(item => <li key={item}>{item}</li>)}
+                </ul>
+              </article>
+              <article className="landing-promo-plan featured">
+                <h4>{promo.premium}</h4>
+                <ul>
+                  {promo.premiumItems.map(item => <li key={item}>{item}</li>)}
+                </ul>
+              </article>
+            </div>
+
+            <div className="landing-promo-actions">
+              <button type="button" className="btn btn-ghost" onClick={closePromo}>
+                {promo.later}
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={closePromoToday}>
+                {promo.hideToday}
+              </button>
+              <Link href="/pricing" className="btn btn-primary" onClick={closePromo}>
+                {promo.viewPricing}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
