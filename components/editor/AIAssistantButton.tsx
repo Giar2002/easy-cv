@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Sparkles, Check, Wand2, Loader2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCVStore } from '@/store/useCVStore';
+import { isPlanLimitMessage } from '@/lib/planLimit';
+import { useUpgradeModalStore } from '@/store/useUpgradeModalStore';
 
 interface AIAssistantButtonProps {
     value: string;
@@ -14,6 +16,7 @@ interface AIAssistantButtonProps {
 export default function AIAssistantButton({ value, onApply, feature = 'general' }: AIAssistantButtonProps) {
     const language = useCVStore(s => s.settings.language) || 'id';
     const isPremiumUser = Boolean(useCVStore(s => s.settings.isPremiumUser));
+    const openUpgradeModal = useUpgradeModalStore(s => s.openModal);
     const isEn = language === 'en';
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState('');
@@ -48,7 +51,11 @@ export default function AIAssistantButton({ value, onApply, feature = 'general' 
             const data = await res.json();
 
             if (res.status === 429) {
-                toast.error(data.error || ui.tooManyReq);
+                const errorMessage = data.error || ui.tooManyReq;
+                toast.error(errorMessage);
+                if (isPlanLimitMessage(errorMessage)) {
+                    openUpgradeModal('ai', errorMessage);
+                }
             } else if (data.result) {
                 setResult(data.result);
                 setOpen(true);

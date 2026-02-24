@@ -5,9 +5,12 @@ import { useCVStore } from '@/store/useCVStore';
 import { getTranslations } from '@/lib/i18n';
 import { Sparkles, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { isPlanLimitMessage } from '@/lib/planLimit';
+import { useUpgradeModalStore } from '@/store/useUpgradeModalStore';
 
 export default function OnboardingWizard() {
     const { settings, personal, setPersonal, completeOnboarding } = useCVStore();
+    const openUpgradeModal = useUpgradeModalStore(s => s.openModal);
     const t = getTranslations(settings.language);
     const isEn = settings.language === 'en';
 
@@ -132,7 +135,11 @@ export default function OnboardingWizard() {
             }
 
             if (profileError || skillsError) {
-                toast.error(profileError || skillsError || (isEn ? 'AI request failed.' : 'Permintaan AI gagal.'));
+                const errorMessage = profileError || skillsError || (isEn ? 'AI request failed.' : 'Permintaan AI gagal.');
+                toast.error(errorMessage);
+                if (isPlanLimitMessage(errorMessage)) {
+                    openUpgradeModal('ai', errorMessage);
+                }
             } else if (hasAppliedData) {
                 toast.success(isEn ? 'Profile & Skills generated successfully!' : 'Profil & Keahlian berhasil digenerate!');
             } else {

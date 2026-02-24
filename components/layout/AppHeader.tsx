@@ -6,6 +6,8 @@ import { getTranslations } from '@/lib/i18n';
 import AIImportModal from '@/components/modals/AIImportModal';
 import ResetModal from '@/components/modals/ResetModal';
 import toast from 'react-hot-toast';
+import { isPlanLimitMessage } from '@/lib/planLimit';
+import { useUpgradeModalStore } from '@/store/useUpgradeModalStore';
 
 export default function AppHeader() {
     const settings = useCVStore(s => s.settings);
@@ -17,6 +19,7 @@ export default function AppHeader() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [downloadChecking, setDownloadChecking] = useState(false);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
+    const openUpgradeModal = useUpgradeModalStore(s => s.openModal);
 
     function toggleLanguage() {
         setSettings({ language: settings.language === 'en' ? 'id' : 'en' });
@@ -49,12 +52,15 @@ export default function AppHeader() {
             const data = await res.json();
 
             if (!res.ok || !data?.allowed) {
-                toast.error(
+                const errorMessage =
                     data?.error ||
                     (language === 'en'
                         ? 'Download blocked by current plan limit.'
-                        : 'Download diblokir oleh limit paket saat ini.')
-                );
+                        : 'Download diblokir oleh limit paket saat ini.');
+                toast.error(errorMessage);
+                if (res.status === 429 && isPlanLimitMessage(errorMessage)) {
+                    openUpgradeModal('download', errorMessage);
+                }
                 return;
             }
 

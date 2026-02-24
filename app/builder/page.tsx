@@ -4,6 +4,7 @@ import AppHeader from '@/components/layout/AppHeader';
 import EditorPanel from '@/components/layout/EditorPanel';
 import PreviewPanel from '@/components/layout/PreviewPanel';
 import OnboardingWizard from '@/components/modals/OnboardingWizard';
+import UpgradeModal from '@/components/modals/UpgradeModal';
 
 export default function BuilderPage() {
     return (
@@ -14,6 +15,7 @@ export default function BuilderPage() {
                 <PreviewPanel />
             </main>
             <OnboardingWizard />
+            <UpgradeModal />
         </div>
     );
 }

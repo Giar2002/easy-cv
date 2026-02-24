@@ -6,6 +6,8 @@ import { getTranslations } from '@/lib/i18n';
 import { Skill } from '@/types/cv';
 import { X, Plus, GripVertical, Sparkles, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { isPlanLimitMessage } from '@/lib/planLimit';
+import { useUpgradeModalStore } from '@/store/useUpgradeModalStore';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -91,6 +93,7 @@ function AiSkillSuggester({
 }) {
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
+    const openUpgradeModal = useUpgradeModalStore(s => s.openModal);
     const texts = {
         missingRole: isEn
             ? 'Fill in your Job Title in the Profile tab first.'
@@ -122,7 +125,11 @@ function AiSkillSuggester({
             const data = await res.json();
 
             if (res.status === 429) {
-                toast.error(data.error || texts.tooManyRequests);
+                const errorMessage = data.error || texts.tooManyRequests;
+                toast.error(errorMessage);
+                if (isPlanLimitMessage(errorMessage)) {
+                    openUpgradeModal('ai', errorMessage);
+                }
             } else if (data.result) {
                 // The AI should return a comma separated string
                 const parts = data.result.replace(/<[^>]*>?/gm, '').split(',').map((s: string) => s.trim()).filter(Boolean);
