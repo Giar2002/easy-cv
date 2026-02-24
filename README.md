@@ -56,6 +56,7 @@ AI_LIMIT_EXPERIENCE=2
 AI_ALLOW_CLIENT_PREMIUM_SIM=true
 FREE_DAILY_DOWNLOAD_LIMIT=1
 DOWNLOAD_ALLOW_CLIENT_PREMIUM_SIM=true
+SUPABASE_SUBSCRIPTIONS_TABLE=user_subscriptions
 ```
 
 Catatan:
@@ -68,6 +69,7 @@ Catatan:
 - Limit hanya dikenakan ke user gratis. User premium melewati kuota harian/fitur.
 - Pada mode sekarang, premium mengikuti flag `isPremiumUser` dari client (untuk simulasi).
 - Download PDF untuk free dibatasi per hari (default `1x/hari`) melalui endpoint `app/api/download-access/route.ts`.
+- Jika user login Supabase dan punya row aktif di `user_subscriptions`, AI/download akan otomatis dianggap premium dari server-side.
 - Jika tabel belum dibuat atau Supabase tidak tersedia, app fallback ke burst limit 1 menit untuk mencegah spam.
 
 ## Environment Variables
@@ -87,6 +89,17 @@ Lihat `.env.example`:
 - `AI_ALLOW_CLIENT_PREMIUM_SIM`: izinkan bypass limit dari flag premium di client (default `true`; set `false` jika ingin mode ketat production).
 - `FREE_DAILY_DOWNLOAD_LIMIT`: batas download PDF gratis per hari (default `1`).
 - `DOWNLOAD_ALLOW_CLIENT_PREMIUM_SIM`: izinkan bypass limit download dari flag premium client saat simulasi (default `true`).
+- `SUPABASE_SUBSCRIPTIONS_TABLE`: nama tabel subscription user login (default `user_subscriptions`).
+
+## Setup Subscription Table (Direkomendasikan)
+
+1. Buka Supabase SQL Editor.
+2. Jalankan file `supabase/user_subscriptions.sql`.
+3. Saat user berlangganan, insert/update row user di tabel ini:
+   - `user_id`: id dari `auth.users`
+   - `plan`: `pro` atau `premium`
+   - `status`: `active` atau `trialing`
+   - `current_period_end`: tanggal berakhir paket (boleh null untuk lifetime)
 
 ## Catatan Keamanan
 

@@ -1,4 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { NextRequest } from 'next/server';
+
+const SUBSCRIPTIONS_TABLE = process.env.SUPABASE_SUBSCRIPTIONS_TABLE || 'user_subscriptions';
 
 function getServerEnv() {
     return {
@@ -22,4 +25,66 @@ export function getSupabaseServiceClient(): SupabaseClient | null {
             autoRefreshToken: false,
         },
     });
+}
+
+function getBearerToken(req: NextRequest): string | null {
+    const authHeader = req.headers.get('authorization') || req.headers.get('Authorization');
+    if (!authHeader) return null;
+    const [scheme, token] = authHeader.split(' ');
+    if (!scheme || !token) return null;
+    if (scheme.toLowerCase() !== 'bearer') return null;
+    return token.trim() || null;
+}
+
+export type ServerPlanResult = {
+    isPremium: boolean;
+    userId: string | null;
+    reason: 'server-premium' | 'server-free' | 'no-token' | 'unavailable' | 'error';
+};
+
+export async function resolveServerPlan(req: NextRequest): Promise<ServerPlanResult> {
+    if (!hasSupabaseServerEnv()) {
+        return { isPremium: false, userId: null, reason: 'unavailable' };
+    }
+
+    const token = getBearerToken(req);
+    if (!token) {
+        return { isPremium: false, userId: null, reason: 'no-token' };
+    }
+
+    const supabase = getSupabaseServiceClient();
+    if (!supabase) {
+        return { isPremium: false, userId: null, reason: 'unavailable' };
+    }
+
+    try {
+        const { data: authData, error: userError } = await supabase.auth.getUser(token);
+        if (userError || !authData?.user?.id) {
+            return { isPremium: false, userId: null, reason: 'error' };
+        }
+
+        const userId = authData.user.id;
+        const { data: subData, error: subError } = await supabase
+            .from(SUBSCRIPTIONS_TABLE)
+            .select('plan,status,current_period_end')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (subError || !subData) {
+            return { isPremium: false, userId, reason: 'server-free' };
+        }
+
+        const status = String(subData.status || '').toLowerCase();
+        const allowedStatus = status === 'active' || status === 'trialing';
+        const periodEnd = subData.current_period_end ? new Date(subData.current_period_end).getTime() : null;
+        const notExpired = periodEnd === null || Number.isNaN(periodEnd) || periodEnd >= Date.now();
+
+        if (allowedStatus && notExpired) {
+            return { isPremium: true, userId, reason: 'server-premium' };
+        }
+
+        return { isPremium: false, userId, reason: 'server-free' };
+    } catch {
+        return { isPremium: false, userId: null, reason: 'error' };
+    }
 }

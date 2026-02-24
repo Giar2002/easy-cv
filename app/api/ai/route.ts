@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseServiceClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
+import { getSupabaseServiceClient, hasSupabaseServerEnv, resolveServerPlan } from '@/lib/supabase/server';
 
 const ANON_COOKIE_NAME = 'easycv_anon_id';
 const DAILY_LIMIT = Number(process.env.AI_DAILY_LIMIT || 25);
@@ -286,7 +286,8 @@ export async function POST(req: NextRequest) {
         const text = typeof payload?.text === 'string' ? payload.text : '';
         const action = typeof payload?.action === 'string' ? payload.action : '';
         const feature = normalizeFeature(payload?.feature, action);
-        const isPremiumUser = isPremiumRequest(payload?.isPremiumUser);
+        const serverPlan = await resolveServerPlan(req);
+        const isPremiumUser = serverPlan.isPremium || isPremiumRequest(payload?.isPremiumUser);
 
         const now = Date.now();
         const limitData = rateLimitMap.get(anonId);
@@ -416,7 +417,7 @@ export async function POST(req: NextRequest) {
         }
 
         return withAnonCookie(
-            NextResponse.json({ result: generatedText }),
+            NextResponse.json({ result: generatedText, premium: isPremiumUser }),
             anonId,
             shouldSetCookie
         );

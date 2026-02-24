@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useCVStore } from '@/store/useCVStore';
 import { isPlanLimitMessage } from '@/lib/planLimit';
 import { useUpgradeModalStore } from '@/store/useUpgradeModalStore';
+import { getSupabaseAuthHeader } from '@/lib/supabase/authHeader';
 
 interface AIAssistantButtonProps {
     value: string;
@@ -43,9 +44,10 @@ export default function AIAssistantButton({ value, onApply, feature = 'general' 
         setOpen(false);
         setLoading(true);
         try {
+            const authHeader = await getSupabaseAuthHeader();
             const res = await fetch('/api/ai', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...authHeader },
                 body: JSON.stringify({ text: value, action: action, feature, isPremiumUser })
             });
             const data = await res.json();

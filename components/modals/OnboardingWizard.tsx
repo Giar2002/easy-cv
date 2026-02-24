@@ -7,6 +7,7 @@ import { Sparkles, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { isPlanLimitMessage } from '@/lib/planLimit';
 import { useUpgradeModalStore } from '@/store/useUpgradeModalStore';
+import { getSupabaseAuthHeader } from '@/lib/supabase/authHeader';
 
 export default function OnboardingWizard() {
     const { settings, personal, setPersonal, completeOnboarding } = useCVStore();
@@ -72,12 +73,13 @@ export default function OnboardingWizard() {
                 ? `Write a concise professional summary (2-3 sentences) for this role: ${jobTitle}. Keep it natural and not too formal.`
                 : `Buatkan summary profesional singkat (2-3 kalimat) untuk profesi: ${jobTitle}. Jangan pakai bahasa kaku.`;
             const skillsPrompt = isEn ? `Role: ${jobTitle}` : `Profesi: ${jobTitle}`;
+            const authHeader = await getSupabaseAuthHeader();
 
             // Setup two requests: Profile and Skills
             const [profileRes, skillsRes] = await Promise.all([
                 fetch('/api/ai', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', ...authHeader },
                     body: JSON.stringify({
                         text: summaryPrompt,
                         action: 'enhance',
@@ -87,7 +89,7 @@ export default function OnboardingWizard() {
                 }),
                 fetch('/api/ai', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', ...authHeader },
                     body: JSON.stringify({
                         text: skillsPrompt,
                         action: 'generate-skills',

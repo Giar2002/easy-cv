@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseServiceClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
+import { getSupabaseServiceClient, hasSupabaseServerEnv, resolveServerPlan } from '@/lib/supabase/server';
 
 const ANON_COOKIE_NAME = 'easycv_anon_id';
 const USAGE_TABLE = process.env.SUPABASE_AI_USAGE_TABLE || 'ai_usage_daily';
@@ -138,12 +138,13 @@ export async function POST(req: NextRequest) {
     try {
         const { anonId, shouldSetCookie } = buildAnonId(req.cookies.get(ANON_COOKIE_NAME)?.value);
         const payload = await req.json().catch(() => ({}));
-        const isPremiumUser = isPremiumRequest(payload?.isPremiumUser);
+        const serverPlan = await resolveServerPlan(req);
+        const isPremiumUser = serverPlan.isPremium || isPremiumRequest(payload?.isPremiumUser);
         const isEn = payload?.language === 'en';
 
         if (isPremiumUser) {
             return withAnonCookie(
-                NextResponse.json({ allowed: true, premium: true, remaining: null }),
+                NextResponse.json({ allowed: true, premium: true, remaining: null, source: serverPlan.reason }),
                 anonId,
                 shouldSetCookie
             );

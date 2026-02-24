@@ -8,6 +8,10 @@ import ResetModal from '@/components/modals/ResetModal';
 import toast from 'react-hot-toast';
 import { isPlanLimitMessage } from '@/lib/planLimit';
 import { useUpgradeModalStore } from '@/store/useUpgradeModalStore';
+import { getSupabaseAuthHeader } from '@/lib/supabase/authHeader';
+import { getSupabaseBrowserClient, hasSupabaseClientEnv } from '@/lib/supabase/client';
+
+const SUBSCRIPTIONS_TABLE = process.env.NEXT_PUBLIC_SUPABASE_SUBSCRIPTIONS_TABLE || 'user_subscriptions';
 
 export default function AppHeader() {
     const settings = useCVStore(s => s.settings);
@@ -16,10 +20,75 @@ export default function AppHeader() {
     const t = getTranslations(language);
     const [showImportModal, setShowImportModal] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
+    const [showAuthModal, setShowAuthModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [downloadChecking, setDownloadChecking] = useState(false);
+    const [authEmailInput, setAuthEmailInput] = useState('');
+    const [authBusy, setAuthBusy] = useState(false);
+    const [authUserEmail, setAuthUserEmail] = useState<string | null>(null);
+    const [authPremium, setAuthPremium] = useState(false);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
     const openUpgradeModal = useUpgradeModalStore(s => s.openModal);
+    const authEnabled = hasSupabaseClientEnv();
+    const isEn = language === 'en';
+    const authText = {
+        login: isEn ? 'Login' : 'Masuk',
+        logout: isEn ? 'Logout' : 'Keluar',
+        premium: isEn ? 'Premium' : 'Premium',
+        free: isEn ? 'Free' : 'Gratis',
+        openAuth: isEn ? 'Open login modal' : 'Buka modal login',
+        authTitle: isEn ? 'Account Access' : 'Akses Akun',
+        authDesc: isEn ? 'Login with magic link to sync your premium plan.' : 'Masuk dengan magic link untuk sinkronisasi paket premium.',
+        emailLabel: isEn ? 'Email' : 'Email',
+        emailPlaceholder: isEn ? 'you@example.com' : 'kamu@email.com',
+        sendMagic: isEn ? 'Send Magic Link' : 'Kirim Magic Link',
+        close: isEn ? 'Close' : 'Tutup',
+        checkMail: isEn ? 'Magic link sent. Check your email inbox.' : 'Magic link terkirim. Cek inbox email kamu.',
+        logoutSuccess: isEn ? 'Logged out successfully.' : 'Berhasil logout.',
+        authNotReady: isEn ? 'Supabase auth is not configured yet.' : 'Supabase auth belum dikonfigurasi.',
+        authFailed: isEn ? 'Failed to authenticate.' : 'Gagal autentikasi.',
+    };
+
+    function isActivePremium(status: unknown, currentPeriodEnd: unknown): boolean {
+        const normalizedStatus = String(status || '').toLowerCase();
+        const activeStatus = normalizedStatus === 'active' || normalizedStatus === 'trialing';
+        if (!activeStatus) return false;
+        if (!currentPeriodEnd) return true;
+        const endMs = new Date(String(currentPeriodEnd)).getTime();
+        if (Number.isNaN(endMs)) return true;
+        return endMs >= Date.now();
+    }
+
+    async function syncAuthSession() {
+        if (!authEnabled) return;
+        const supabase = getSupabaseBrowserClient();
+        if (!supabase) return;
+
+        const { data } = await supabase.auth.getSession();
+        const session = data?.session;
+        if (!session?.user) {
+            setAuthUserEmail(null);
+            setAuthPremium(false);
+            setSettings({ isPremiumUser: false });
+            return;
+        }
+
+        setAuthUserEmail(session.user.email || null);
+        let premium = false;
+        try {
+            const { data: subData } = await supabase
+                .from(SUBSCRIPTIONS_TABLE)
+                .select('status,current_period_end')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+            premium = isActivePremium(subData?.status, subData?.current_period_end);
+        } catch {
+            premium = false;
+        }
+
+        setAuthPremium(premium);
+        setSettings({ isPremiumUser: premium });
+    }
 
     function toggleLanguage() {
         setSettings({ language: settings.language === 'en' ? 'id' : 'en' });
@@ -33,17 +102,82 @@ export default function AppHeader() {
         document.documentElement.setAttribute('data-theme', settings.theme || 'light');
     }, [settings.theme]);
 
+    useEffect(() => {
+        if (!authEnabled) return;
+        const supabase = getSupabaseBrowserClient();
+        if (!supabase) return;
+
+        void syncAuthSession();
+        const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+            void syncAuthSession();
+        });
+        return () => {
+            authListener.subscription.unsubscribe();
+        };
+    }, [authEnabled]);
+
     function handleReset() {
         setShowResetModal(true);
+    }
+
+    async function handleSendMagicLink() {
+        if (!authEnabled) {
+            toast.error(authText.authNotReady);
+            return;
+        }
+        if (!authEmailInput.trim()) return;
+        const supabase = getSupabaseBrowserClient();
+        if (!supabase) {
+            toast.error(authText.authNotReady);
+            return;
+        }
+
+        setAuthBusy(true);
+        try {
+            const { error } = await supabase.auth.signInWithOtp({
+                email: authEmailInput.trim(),
+                options: {
+                    emailRedirectTo: `${window.location.origin}/builder`,
+                },
+            });
+            if (error) throw error;
+            toast.success(authText.checkMail);
+            setShowAuthModal(false);
+        } catch {
+            toast.error(authText.authFailed);
+        } finally {
+            setAuthBusy(false);
+        }
+    }
+
+    async function handleLogout() {
+        if (!authEnabled) return;
+        const supabase = getSupabaseBrowserClient();
+        if (!supabase) return;
+        setAuthBusy(true);
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+            setAuthPremium(false);
+            setAuthUserEmail(null);
+            setSettings({ isPremiumUser: false });
+            toast.success(authText.logoutSuccess);
+            setShowAuthModal(false);
+        } catch {
+            toast.error(authText.authFailed);
+        } finally {
+            setAuthBusy(false);
+        }
     }
 
     async function handleDownloadPDF() {
         if (downloadChecking) return;
         setDownloadChecking(true);
         try {
+            const authHeader = await getSupabaseAuthHeader();
             const res = await fetch('/api/download-access', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...authHeader },
                 body: JSON.stringify({
                     isPremiumUser: Boolean(settings.isPremiumUser),
                     language: settings.language || 'en',
@@ -191,6 +325,14 @@ export default function AppHeader() {
                         <a className="btn btn-ghost btn-hide-mobile" href="/pricing">
                             <span className="btn-label">{language === 'en' ? 'Pricing' : 'Harga'}</span>
                         </a>
+                        {authEnabled && (
+                            <button className="btn btn-ghost btn-hide-mobile auth-account-btn" onClick={() => setShowAuthModal(true)} title={authText.openAuth}>
+                                <span className="btn-label">{authUserEmail ? authUserEmail : authText.login}</span>
+                                <span className={`auth-plan-chip ${authPremium ? 'premium' : 'free'}`}>
+                                    {authPremium ? authText.premium : authText.free}
+                                </span>
+                            </button>
+                        )}
                         <button id="btn-download-pdf" className="btn btn-primary btn-download-pdf" onClick={handleDownloadPDF} disabled={downloadChecking}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -244,6 +386,15 @@ export default function AppHeader() {
                                 >
                                     <span>Export Json</span>
                                 </button>
+                                {authEnabled && (
+                                    <button
+                                        className="btn btn-ghost"
+                                        type="button"
+                                        onClick={() => { setShowAuthModal(true); setIsMobileMenuOpen(false); }}
+                                    >
+                                        <span>{authUserEmail ? (isEn ? 'Account' : 'Akun') : authText.login}</span>
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -251,6 +402,51 @@ export default function AppHeader() {
             </header>
             {showImportModal && <AIImportModal onClose={() => setShowImportModal(false)} />}
             {showResetModal && <ResetModal onClose={() => setShowResetModal(false)} />}
+            {showAuthModal && (
+                <div className="modal-overlay" onClick={() => setShowAuthModal(false)}>
+                    <div className="modal-content auth-modal-card" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>{authText.authTitle}</h3>
+                            <button className="modal-close" onClick={() => setShowAuthModal(false)}>×</button>
+                        </div>
+                        <div className="auth-modal-body">
+                            <p className="section-desc">{authText.authDesc}</p>
+
+                            {authUserEmail ? (
+                                <>
+                                    <div className="auth-user-row">
+                                        <span>{authUserEmail}</span>
+                                        <span className={`auth-plan-chip ${authPremium ? 'premium' : 'free'}`}>
+                                            {authPremium ? authText.premium : authText.free}
+                                        </span>
+                                    </div>
+                                    <button className="btn btn-ghost" onClick={handleLogout} disabled={authBusy}>
+                                        {authBusy ? '...' : authText.logout}
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <label className="auth-modal-label">{authText.emailLabel}</label>
+                                    <input
+                                        className="form-input"
+                                        type="email"
+                                        value={authEmailInput}
+                                        onChange={e => setAuthEmailInput(e.target.value)}
+                                        placeholder={authText.emailPlaceholder}
+                                        disabled={authBusy}
+                                    />
+                                    <div className="auth-modal-actions">
+                                        <button className="btn btn-ghost" onClick={() => setShowAuthModal(false)}>{authText.close}</button>
+                                        <button className="btn btn-primary" onClick={handleSendMagicLink} disabled={authBusy || !authEmailInput.trim()}>
+                                            {authBusy ? '...' : authText.sendMagic}
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

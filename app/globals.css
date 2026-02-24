@@ -204,6 +204,76 @@ body {
     padding: 0.55rem 0.65rem;
 }
 
+.auth-account-btn {
+    max-width: 220px;
+}
+
+.auth-account-btn .btn-label {
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.auth-plan-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.14rem 0.52rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    background: var(--bg-panel);
+}
+
+.auth-plan-chip.premium {
+    border-color: rgba(16, 185, 129, 0.45);
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.12);
+}
+
+.auth-plan-chip.free {
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+.auth-modal-card {
+    max-width: 440px;
+}
+
+.auth-modal-body {
+    padding: 1rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.auth-modal-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.auth-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.auth-user-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-panel);
+    font-size: 0.88rem;
+}
+
 /* --- Buttons --- */
 .btn {
     display: inline-flex;

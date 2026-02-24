@@ -8,6 +8,7 @@ import { X, Plus, GripVertical, Sparkles, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { isPlanLimitMessage } from '@/lib/planLimit';
 import { useUpgradeModalStore } from '@/store/useUpgradeModalStore';
+import { getSupabaseAuthHeader } from '@/lib/supabase/authHeader';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -117,9 +118,10 @@ function AiSkillSuggester({
         setLoading(true);
         try {
             const requestText = isEn ? `Role: ${jobTitle}` : `Profesi: ${jobTitle}`;
+            const authHeader = await getSupabaseAuthHeader();
             const res = await fetch('/api/ai', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...authHeader },
                 body: JSON.stringify({ text: requestText, action: 'generate-skills', feature: 'skills', isPremiumUser })
             });
             const data = await res.json();
