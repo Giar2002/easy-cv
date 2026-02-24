@@ -56,7 +56,10 @@ AI_LIMIT_EXPERIENCE=2
 AI_ALLOW_CLIENT_PREMIUM_SIM=true
 FREE_DAILY_DOWNLOAD_LIMIT=1
 DOWNLOAD_ALLOW_CLIENT_PREMIUM_SIM=true
+NEXT_PUBLIC_SUPABASE_SUBSCRIPTIONS_TABLE=user_subscriptions
 SUPABASE_SUBSCRIPTIONS_TABLE=user_subscriptions
+PREMIUM_TEST_EMAILS=
+SUPABASE_FEEDBACK_TABLE=cv_feedback
 ```
 
 Catatan:
@@ -89,7 +92,10 @@ Lihat `.env.example`:
 - `AI_ALLOW_CLIENT_PREMIUM_SIM`: izinkan bypass limit dari flag premium di client (default `true`; set `false` jika ingin mode ketat production).
 - `FREE_DAILY_DOWNLOAD_LIMIT`: batas download PDF gratis per hari (default `1`).
 - `DOWNLOAD_ALLOW_CLIENT_PREMIUM_SIM`: izinkan bypass limit download dari flag premium client saat simulasi (default `true`).
+- `NEXT_PUBLIC_SUPABASE_SUBSCRIPTIONS_TABLE`: nama tabel subscription untuk cek status plan di UI client (default `user_subscriptions`).
 - `SUPABASE_SUBSCRIPTIONS_TABLE`: nama tabel subscription user login (default `user_subscriptions`).
+- `PREMIUM_TEST_EMAILS`: daftar email dipisah koma yang otomatis dianggap premium setelah login (untuk testing internal).
+- `SUPABASE_FEEDBACK_TABLE`: nama tabel feedback user (default `cv_feedback`).
 
 ## Setup Subscription Table (Direkomendasikan)
 
@@ -100,6 +106,12 @@ Lihat `.env.example`:
    - `plan`: `pro` atau `premium`
    - `status`: `active` atau `trialing`
    - `current_period_end`: tanggal berakhir paket (boleh null untuk lifetime)
+
+## Setup Feedback Table (Opsional)
+
+1. Buka Supabase SQL Editor.
+2. Jalankan file `supabase/feedback.sql`.
+3. Feedback dari modal setelah download CV akan disimpan ke tabel `cv_feedback`.
 
 ## Catatan Keamanan
 

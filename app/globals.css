@@ -168,6 +168,10 @@ body {
     display: inline-flex;
 }
 
+.btn-collapse-xl {
+    display: inline-flex;
+}
+
 .header-more-btn {
     display: none;
 }
@@ -272,6 +276,16 @@ body {
     border-radius: var(--radius-sm);
     background: var(--bg-panel);
     font-size: 0.88rem;
+}
+
+@media (max-width: 1400px) {
+    .btn-collapse-xl {
+        display: none !important;
+    }
+
+    .header-more-btn {
+        display: inline-flex;
+    }
 }
 
 /* --- Buttons --- */
@@ -2172,6 +2186,10 @@ select.form-group,
     .header-mobile-menu {
         min-width: 175px;
         width: min(210px, calc(100vw - 1.5rem));
+    }
+
+    .auth-account-btn {
+        max-width: 160px;
     }
 
     .tab-btn span {

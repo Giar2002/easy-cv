@@ -21,12 +21,16 @@ export default function AppHeader() {
     const [showImportModal, setShowImportModal] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [showFeedbackModal, setShowFeedbackModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [downloadChecking, setDownloadChecking] = useState(false);
     const [authEmailInput, setAuthEmailInput] = useState('');
     const [authBusy, setAuthBusy] = useState(false);
     const [authUserEmail, setAuthUserEmail] = useState<string | null>(null);
     const [authPremium, setAuthPremium] = useState(false);
+    const [feedbackText, setFeedbackText] = useState('');
+    const [feedbackRating, setFeedbackRating] = useState(5);
+    const [feedbackBusy, setFeedbackBusy] = useState(false);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
     const openUpgradeModal = useUpgradeModalStore(s => s.openModal);
     const authEnabled = hasSupabaseClientEnv();
@@ -47,6 +51,13 @@ export default function AppHeader() {
         logoutSuccess: isEn ? 'Logged out successfully.' : 'Berhasil logout.',
         authNotReady: isEn ? 'Supabase auth is not configured yet.' : 'Supabase auth belum dikonfigurasi.',
         authFailed: isEn ? 'Failed to authenticate.' : 'Gagal autentikasi.',
+        feedbackTitle: isEn ? 'Thanks for using EasY CV' : 'Terima kasih sudah pakai EasY CV',
+        feedbackDesc: isEn ? 'Please share your feedback so we can improve.' : 'Bantu kami improve dengan kritik dan saran kamu.',
+        feedbackPlaceholder: isEn ? 'Write your suggestion or issue here...' : 'Tulis kritik/saran atau kendala kamu di sini...',
+        feedbackSkip: isEn ? 'Skip' : 'Lewati',
+        feedbackSubmit: isEn ? 'Send Feedback' : 'Kirim Feedback',
+        feedbackSuccess: isEn ? 'Feedback sent. Thank you.' : 'Feedback terkirim. Terima kasih.',
+        feedbackError: isEn ? 'Failed to send feedback.' : 'Gagal kirim feedback.',
     };
 
     function isActivePremium(status: unknown, currentPeriodEnd: unknown): boolean {
@@ -199,6 +210,7 @@ export default function AppHeader() {
             }
 
             window.print();
+            setShowFeedbackModal(true);
             if (!data?.premium && typeof data?.remaining === 'number' && data.remaining >= 0) {
                 toast.success(
                     language === 'en'
@@ -214,6 +226,38 @@ export default function AppHeader() {
             );
         } finally {
             setDownloadChecking(false);
+        }
+    }
+
+    async function handleSubmitFeedback() {
+        if (feedbackBusy) return;
+        setFeedbackBusy(true);
+        try {
+            const authHeader = await getSupabaseAuthHeader();
+            const res = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...authHeader,
+                },
+                body: JSON.stringify({
+                    message: feedbackText.trim(),
+                    rating: feedbackRating,
+                    source: 'builder-after-download',
+                    language,
+                }),
+            });
+            if (!res.ok) {
+                throw new Error('feedback-failed');
+            }
+            toast.success(authText.feedbackSuccess);
+            setShowFeedbackModal(false);
+            setFeedbackText('');
+            setFeedbackRating(5);
+        } catch {
+            toast.error(authText.feedbackError);
+        } finally {
+            setFeedbackBusy(false);
         }
     }
 
@@ -299,14 +343,14 @@ export default function AppHeader() {
                             <span className="btn-emoji">{settings.language === 'en' ? '🇬🇧' : '🇮🇩'}</span>
                             <span className="btn-label">{settings.language === 'en' ? 'EN' : 'ID'}</span>
                         </button>
-                        <button className="btn btn-ghost btn-hide-mobile" onClick={handleReset} title={t.resetCVData}>
+                        <button className="btn btn-ghost btn-hide-mobile btn-collapse-xl" onClick={handleReset} title={t.resetCVData}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="3 6 5 6 21 6" />
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                             </svg>
                             <span className="btn-label">Reset</span>
                         </button>
-                        <button className="btn btn-secondary btn-hide-mobile" onClick={() => setShowImportModal(true)} title={t.importJson}>
+                        <button className="btn btn-secondary btn-hide-mobile btn-collapse-xl" onClick={() => setShowImportModal(true)} title={t.importJson}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                 <polyline points="7 10 12 15 17 10" />
@@ -314,7 +358,7 @@ export default function AppHeader() {
                             </svg>
                             <span className="btn-label">Import Json</span>
                         </button>
-                        <button className="btn btn-secondary btn-hide-mobile" onClick={handleExportJson} title={t.exportJson}>
+                        <button className="btn btn-secondary btn-hide-mobile btn-collapse-xl" onClick={handleExportJson} title={t.exportJson}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                 <polyline points="17 8 12 3 7 8" />
@@ -322,11 +366,11 @@ export default function AppHeader() {
                             </svg>
                             <span className="btn-label">Export Json</span>
                         </button>
-                        <a className="btn btn-ghost btn-hide-mobile" href="/pricing">
+                        <a className="btn btn-ghost btn-hide-mobile btn-collapse-xl" href="/pricing">
                             <span className="btn-label">{language === 'en' ? 'Pricing' : 'Harga'}</span>
                         </a>
                         {authEnabled && (
-                            <button className="btn btn-ghost btn-hide-mobile auth-account-btn" onClick={() => setShowAuthModal(true)} title={authText.openAuth}>
+                            <button className="btn btn-ghost btn-hide-mobile btn-collapse-xl auth-account-btn" onClick={() => setShowAuthModal(true)} title={authText.openAuth}>
                                 <span className="btn-label">{authUserEmail ? authUserEmail : authText.login}</span>
                                 <span className={`auth-plan-chip ${authPremium ? 'premium' : 'free'}`}>
                                     {authPremium ? authText.premium : authText.free}
@@ -443,6 +487,47 @@ export default function AppHeader() {
                                     </div>
                                 </>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showFeedbackModal && (
+                <div className="modal-overlay" onClick={() => setShowFeedbackModal(false)}>
+                    <div className="modal-content auth-modal-card" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>{authText.feedbackTitle}</h3>
+                            <button className="modal-close" onClick={() => setShowFeedbackModal(false)}>×</button>
+                        </div>
+                        <div className="auth-modal-body">
+                            <p className="section-desc">{authText.feedbackDesc}</p>
+                            <label className="auth-modal-label">{isEn ? 'Rating' : 'Rating'}</label>
+                            <select
+                                className="form-input"
+                                value={feedbackRating}
+                                onChange={e => setFeedbackRating(Number(e.target.value))}
+                                disabled={feedbackBusy}
+                            >
+                                <option value={5}>5 - Excellent</option>
+                                <option value={4}>4 - Good</option>
+                                <option value={3}>3 - Okay</option>
+                                <option value={2}>2 - Needs improvement</option>
+                                <option value={1}>1 - Poor</option>
+                            </select>
+                            <label className="auth-modal-label">{isEn ? 'Feedback' : 'Feedback'}</label>
+                            <textarea
+                                className="form-input"
+                                value={feedbackText}
+                                onChange={e => setFeedbackText(e.target.value)}
+                                placeholder={authText.feedbackPlaceholder}
+                                rows={4}
+                                disabled={feedbackBusy}
+                            />
+                            <div className="auth-modal-actions">
+                                <button className="btn btn-ghost" onClick={() => setShowFeedbackModal(false)}>{authText.feedbackSkip}</button>
+                                <button className="btn btn-primary" onClick={handleSubmitFeedback} disabled={feedbackBusy}>
+                                    {feedbackBusy ? '...' : authText.feedbackSubmit}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

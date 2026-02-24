@@ -2,6 +2,10 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { NextRequest } from 'next/server';
 
 const SUBSCRIPTIONS_TABLE = process.env.SUPABASE_SUBSCRIPTIONS_TABLE || 'user_subscriptions';
+const PREMIUM_TEST_EMAILS = (process.env.PREMIUM_TEST_EMAILS || '')
+    .split(',')
+    .map(email => email.trim().toLowerCase())
+    .filter(Boolean);
 
 function getServerEnv() {
     return {
@@ -64,6 +68,11 @@ export async function resolveServerPlan(req: NextRequest): Promise<ServerPlanRes
         }
 
         const userId = authData.user.id;
+        const userEmail = String(authData.user.email || '').toLowerCase();
+        if (userEmail && PREMIUM_TEST_EMAILS.includes(userEmail)) {
+            return { isPremium: true, userId, reason: 'server-premium' };
+        }
+
         const { data: subData, error: subError } = await supabase
             .from(SUBSCRIPTIONS_TABLE)
             .select('plan,status,current_period_end')
