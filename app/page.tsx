@@ -57,6 +57,7 @@ export default function LandingPage() {
               </div>
             </div>
             <Link href="/templates" className="btn btn-primary nav-cta">{t.navOpenApp}</Link>
+            <Link href="/pricing" className="btn btn-ghost nav-cta">{language === 'en' ? 'Pricing' : 'Harga'}</Link>
           </div>
         </div>
       </nav>
@@ -287,6 +288,7 @@ export default function LandingPage() {
           <div className="footer-logo"><span>EasY CV</span></div>
           <div className="footer-links">
             <Link href="/builder">{t.footerBuild}</Link>
+            <Link href="/pricing">{language === 'en' ? 'Pricing' : 'Harga'}</Link>
             <a href="#">{t.footerAbout}</a>
             <a href="#">{t.footerPrivacy}</a>
           </div>

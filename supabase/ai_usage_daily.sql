@@ -1,6 +1,6 @@
 -- Run this in Supabase SQL Editor.
 -- Safe to re-run (idempotent).
--- Tracks AI usage per anonymous browser user per UTC day.
+-- Tracks AI + download usage per anonymous browser user per UTC day.
 
 create table if not exists public.ai_usage_daily (
   anon_id text not null,
@@ -9,6 +9,7 @@ create table if not exists public.ai_usage_daily (
   survey_requests integer not null default 0,
   summary_requests integer not null default 0,
   experience_requests integer not null default 0,
+  download_requests integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint ai_usage_daily_requests_non_negative check (requests >= 0),
@@ -18,6 +19,7 @@ create table if not exists public.ai_usage_daily (
 alter table public.ai_usage_daily add column if not exists survey_requests integer not null default 0;
 alter table public.ai_usage_daily add column if not exists summary_requests integer not null default 0;
 alter table public.ai_usage_daily add column if not exists experience_requests integer not null default 0;
+alter table public.ai_usage_daily add column if not exists download_requests integer not null default 0;
 
 alter table public.ai_usage_daily enable row level security;
 

@@ -5,6 +5,7 @@ import { useCVStore } from '@/store/useCVStore';
 import { getTranslations } from '@/lib/i18n';
 import AIImportModal from '@/components/modals/AIImportModal';
 import ResetModal from '@/components/modals/ResetModal';
+import toast from 'react-hot-toast';
 
 export default function AppHeader() {
     const settings = useCVStore(s => s.settings);
@@ -14,6 +15,7 @@ export default function AppHeader() {
     const [showImportModal, setShowImportModal] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [downloadChecking, setDownloadChecking] = useState(false);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
 
     function toggleLanguage() {
@@ -32,8 +34,47 @@ export default function AppHeader() {
         setShowResetModal(true);
     }
 
-    function handleDownloadPDF() {
-        window.print();
+    async function handleDownloadPDF() {
+        if (downloadChecking) return;
+        setDownloadChecking(true);
+        try {
+            const res = await fetch('/api/download-access', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    isPremiumUser: Boolean(settings.isPremiumUser),
+                    language: settings.language || 'en',
+                }),
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data?.allowed) {
+                toast.error(
+                    data?.error ||
+                    (language === 'en'
+                        ? 'Download blocked by current plan limit.'
+                        : 'Download diblokir oleh limit paket saat ini.')
+                );
+                return;
+            }
+
+            window.print();
+            if (!data?.premium && typeof data?.remaining === 'number' && data.remaining >= 0) {
+                toast.success(
+                    language === 'en'
+                        ? `Download success. Remaining free downloads today: ${data.remaining}.`
+                        : `Download berhasil. Sisa download gratis hari ini: ${data.remaining}.`
+                );
+            }
+        } catch {
+            toast.error(
+                language === 'en'
+                    ? 'Failed to validate download quota.'
+                    : 'Gagal memvalidasi kuota download.'
+            );
+        } finally {
+            setDownloadChecking(false);
+        }
     }
 
     function handleExportJson() {
@@ -141,13 +182,18 @@ export default function AppHeader() {
                             </svg>
                             <span className="btn-label">Export Json</span>
                         </button>
-                        <button id="btn-download-pdf" className="btn btn-primary btn-download-pdf" onClick={handleDownloadPDF}>
+                        <a className="btn btn-ghost btn-hide-mobile" href="/pricing">
+                            <span className="btn-label">{language === 'en' ? 'Pricing' : 'Harga'}</span>
+                        </a>
+                        <button id="btn-download-pdf" className="btn btn-primary btn-download-pdf" onClick={handleDownloadPDF} disabled={downloadChecking}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                 <polyline points="7 10 12 15 17 10" />
                                 <line x1="12" y1="15" x2="12" y2="3" />
                             </svg>
-                            <span className="btn-label">{t.downloadPdf}</span>
+                            <span className="btn-label">
+                                {downloadChecking ? (language === 'en' ? 'Checking...' : 'Memeriksa...') : t.downloadPdf}
+                            </span>
                         </button>
                         <div ref={mobileMenuRef} className="header-mobile-menu-wrap">
                             <button
@@ -164,6 +210,13 @@ export default function AppHeader() {
                                 </svg>
                             </button>
                             <div className={`header-mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+                                <button
+                                    className="btn btn-ghost"
+                                    type="button"
+                                    onClick={() => { window.location.href = '/pricing'; setIsMobileMenuOpen(false); }}
+                                >
+                                    <span>{language === 'en' ? 'Pricing' : 'Harga'}</span>
+                                </button>
                                 <button
                                     className="btn btn-ghost"
                                     type="button"
