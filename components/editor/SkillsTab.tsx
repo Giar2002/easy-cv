@@ -250,13 +250,14 @@ export default function SkillsTab() {
 
             <AiSkillSuggester jobTitle={jobTitle} onAddMultiple={handleAddMultiple} t={t} isEn={isEn} isPremiumUser={isPremiumUser} />
 
-            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: '8px' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>
+            <div className="bulk-skill-card">
+                <label className="bulk-skill-label">
                     {texts.bulkLabel}
                 </label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div className="bulk-skill-row">
                     <input
                         type="text"
+                        className="form-input bulk-skill-input"
                         placeholder={texts.bulkPlaceholder}
                         value={bulkInput}
                         onChange={e => setBulkInput(e.target.value)}
@@ -270,9 +271,8 @@ export default function SkillsTab() {
                                 }
                             }
                         }}
-                        style={{ flex: 1 }}
                     />
-                    <button type="button" className="btn btn-primary" onClick={() => {
+                    <button type="button" className="btn btn-primary bulk-skill-btn" onClick={() => {
                         const parts = bulkInput.split(',').map(s => s.trim()).filter(Boolean);
                         if (parts.length > 0) {
                             handleAddMultiple(parts);
@@ -282,7 +282,7 @@ export default function SkillsTab() {
                         {t.addSkill}
                     </button>
                 </div>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: 0 }}>
+                <p className="bulk-skill-help">
                     {texts.bulkHelp}
                 </p>
             </div>

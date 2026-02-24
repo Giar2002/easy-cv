@@ -95,24 +95,45 @@ export default function PersonalTab() {
                 {/* Photo Upload */}
                 <div className="form-group photo-upload-group">
                     <label>{t.profilePhoto}</label>
-                    <div className="photo-upload" onClick={() => fileInputRef.current?.click()}>
-                        {personal.photo ? (
-                            <img src={personal.photo} alt={t.profilePhoto} className="photo-preview-img" />
-                        ) : (
-                            <div className="photo-placeholder">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
-                                    <polyline points="21 15 16 10 5 21" />
-                                </svg>
-                                <span>{t.uploadPhoto}</span>
-                            </div>
+                    <div className="photo-upload-stack">
+                        <div
+                            className="photo-upload"
+                            onClick={() => fileInputRef.current?.click()}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    fileInputRef.current?.click();
+                                }
+                            }}
+                        >
+                            {personal.photo ? (
+                                <img src={personal.photo} alt={t.profilePhoto} className="photo-preview-img" />
+                            ) : (
+                                <div className="photo-placeholder">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
+                                        <polyline points="21 15 16 10 5 21" />
+                                    </svg>
+                                    <span>{t.uploadPhoto}</span>
+                                </div>
+                            )}
+                            <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handlePhotoChange} />
+                        </div>
+                        {personal.photo && (
+                            <button
+                                type="button"
+                                className="btn btn-ghost photo-remove-btn"
+                                onClick={() => setPersonal({ photo: '' })}
+                            >
+                                {t.removePhoto}
+                            </button>
                         )}
-                        <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handlePhotoChange} />
+                        <p className="photo-upload-help">
+                            {isEn ? 'JPG/PNG up to 2MB' : 'JPG/PNG maksimal 2MB'}
+                        </p>
                     </div>
-                    {personal.photo && (
-                        <button className="btn btn-ghost" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}
-                            onClick={() => setPersonal({ photo: '' })}>{t.removePhoto}</button>
-                    )}
                 </div>
                 {/* Fields */}
                 <div className="form-group full-width">
