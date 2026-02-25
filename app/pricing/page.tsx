@@ -93,8 +93,8 @@ export default function PricingPage() {
                 <section className="pricing-note">
                     <p>
                         {isEn
-                            ? 'Current release still uses Premium Simulation for internal testing. Billing gateway will be connected next.'
-                            : 'Rilis saat ini masih memakai Simulasi Premium untuk pengujian internal. Gateway pembayaran akan disambungkan berikutnya.'}
+                            ? 'Billing gateway is currently in progress and will be connected in the next release.'
+                            : 'Gateway pembayaran sedang dalam proses dan akan disambungkan pada rilis berikutnya.'}
                     </p>
                 </section>
             </main>

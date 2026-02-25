@@ -27,8 +27,8 @@ export default function TemplatesPage() {
         if (!canUseTemplate(id, isPremiumUser)) {
             toast.error(
                 language === 'en'
-                    ? 'This is a premium template. Turn on Premium simulation to use it.'
-                    : 'Ini template premium. Aktifkan simulasi Premium untuk memakainya.'
+                    ? 'This is a premium template. Please login with a premium account to use it.'
+                    : 'Ini template premium. Silakan login dengan akun premium untuk memakainya.'
             );
             return;
         }
@@ -89,26 +89,6 @@ export default function TemplatesPage() {
                             <span>{cat.name}</span>
                         </button>
                     ))}
-                    <button
-                        onClick={() => setSettings({ isPremiumUser: !isPremiumUser })}
-                        style={{
-                            padding: '0.6rem 1.2rem',
-                            borderRadius: '100px',
-                            border: '1px solid var(--border)',
-                            background: isPremiumUser ? '#059669' : 'var(--bg-card)',
-                            color: isPremiumUser ? '#fff' : 'var(--text-primary)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            whiteSpace: 'nowrap',
-                            transition: 'all 0.2s',
-                            fontWeight: 600
-                        }}
-                    >
-                        <span>💎</span>
-                        <span>{isEn ? `Premium Sim: ${isPremiumUser ? 'ON' : 'OFF'}` : `Simulasi Premium: ${isPremiumUser ? 'ON' : 'OFF'}`}</span>
-                    </button>
                 </div>
 
                 {/* Grid */}

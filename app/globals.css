@@ -369,12 +369,21 @@ body {
 }
 
 /* --- Main Layout --- */
+.app-wrapper {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 .app-main {
     display: grid;
     grid-template-columns: 440px 1fr;
     max-width: 1600px;
     margin: 0 auto;
-    min-height: calc(100vh - 60px);
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
 }
 
 /* --- Editor Panel --- */
@@ -382,9 +391,9 @@ body {
     padding: 1.25rem;
     border-right: 1px solid var(--border);
     overflow-y: auto;
-    max-height: calc(100vh - 60px);
-    position: sticky;
-    top: 60px;
+    max-height: none;
+    height: 100%;
+    position: relative;
 }
 
 /* Custom Scrollbars Global */
@@ -688,6 +697,13 @@ select.form-group,
     grid-column: 1 / -1;
 }
 
+.photo-profile-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
 .photo-upload-stack {
     display: flex;
     flex-direction: column;
@@ -749,6 +765,12 @@ select.form-group,
     margin-top: 0.4rem;
     font-size: 0.74rem;
     color: var(--text-muted);
+}
+
+.photo-visibility-toggle {
+    flex: 1;
+    min-width: 240px;
+    max-width: 440px;
 }
 
 /* --- Dynamic Entry Cards --- */
@@ -853,6 +875,17 @@ select.form-group,
     .photo-upload {
         width: 104px;
         height: 104px;
+    }
+
+    .photo-profile-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .photo-visibility-toggle {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
     }
 
     .bulk-skill-row {
@@ -1386,7 +1419,8 @@ select.form-group,
     padding-bottom: 3rem;
     background: var(--bg-secondary);
     overflow-y: auto;
-    max-height: calc(100vh - 60px);
+    max-height: none;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2110,22 +2144,31 @@ select.form-group,
    RESPONSIVE
    ============================================= */
 @media (max-width: 1024px) {
+    .app-wrapper {
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+
     .app-main {
         display: flex;
         flex-direction: column-reverse;
         /* Preview on top, Editor below */
+        overflow: visible;
     }
 
     .editor-panel {
         position: relative;
         top: auto;
         max-height: none;
+        height: auto;
         border-right: none;
         border-top: 1px solid var(--border);
     }
 
     .preview-panel {
         max-height: 50vh;
+        height: auto;
         overflow-y: auto;
         padding: 1rem;
     }
@@ -2237,6 +2280,11 @@ select.form-group,
 @media print {
     body {
         background: white;
+    }
+
+    .app-wrapper {
+        height: auto;
+        overflow: visible;
     }
 
     .app-header,

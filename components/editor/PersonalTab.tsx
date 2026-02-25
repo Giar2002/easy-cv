@@ -22,6 +22,8 @@ function readAsDataUrl(file: File): Promise<string> {
 export default function PersonalTab() {
     const personal = useCVStore(s => s.personal);
     const setPersonal = useCVStore(s => s.setPersonal);
+    const showPhoto = useCVStore(s => Boolean(s.settings.showPhoto));
+    const setSettings = useCVStore(s => s.setSettings);
     const language = useCVStore(s => s.settings.language);
     const t = getTranslations(language);
     const isEn = language === 'en';
@@ -95,44 +97,60 @@ export default function PersonalTab() {
                 {/* Photo Upload */}
                 <div className="form-group photo-upload-group">
                     <label>{t.profilePhoto}</label>
-                    <div className="photo-upload-stack">
-                        <div
-                            className="photo-upload"
-                            onClick={() => fileInputRef.current?.click()}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    fileInputRef.current?.click();
-                                }
-                            }}
-                        >
-                            {personal.photo ? (
-                                <img src={personal.photo} alt={t.profilePhoto} className="photo-preview-img" />
-                            ) : (
-                                <div className="photo-placeholder">
-                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
-                                        <polyline points="21 15 16 10 5 21" />
-                                    </svg>
-                                    <span>{t.uploadPhoto}</span>
-                                </div>
-                            )}
-                            <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handlePhotoChange} />
-                        </div>
-                        {personal.photo && (
-                            <button
-                                type="button"
-                                className="btn btn-ghost photo-remove-btn"
-                                onClick={() => setPersonal({ photo: '' })}
+                    <div className="photo-profile-row">
+                        <div className="photo-upload-stack">
+                            <div
+                                className="photo-upload"
+                                onClick={() => fileInputRef.current?.click()}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        fileInputRef.current?.click();
+                                    }
+                                }}
                             >
-                                {t.removePhoto}
-                            </button>
-                        )}
-                        <p className="photo-upload-help">
-                            {isEn ? 'JPG/PNG up to 2MB' : 'JPG/PNG maksimal 2MB'}
-                        </p>
+                                {personal.photo ? (
+                                    <img src={personal.photo} alt={t.profilePhoto} className="photo-preview-img" />
+                                ) : (
+                                    <div className="photo-placeholder">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
+                                            <polyline points="21 15 16 10 5 21" />
+                                        </svg>
+                                        <span>{t.uploadPhoto}</span>
+                                    </div>
+                                )}
+                                <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handlePhotoChange} />
+                            </div>
+                            {personal.photo && (
+                                <button
+                                    type="button"
+                                    className="btn btn-ghost photo-remove-btn"
+                                    onClick={() => setPersonal({ photo: '' })}
+                                >
+                                    {t.removePhoto}
+                                </button>
+                            )}
+                            <p className="photo-upload-help">
+                                {isEn ? 'JPG/PNG up to 2MB' : 'JPG/PNG maksimal 2MB'}
+                            </p>
+                        </div>
+                        <div className="setting-item photo-visibility-toggle">
+                            <div className="setting-info">
+                                <span className="setting-label">{t.showPhoto}</span>
+                                <span className="setting-desc">{t.showPhotoDesc}</span>
+                            </div>
+                            <label className="toggle-switch">
+                                <input
+                                    type="checkbox"
+                                    checked={showPhoto}
+                                    onChange={e => setSettings({ showPhoto: e.target.checked })}
+                                />
+                                <span className="toggle-slider" />
+                            </label>
+                        </div>
                     </div>
                 </div>
                 {/* Fields */}

@@ -216,8 +216,8 @@ export default function SettingsTab() {
         if (!canUseTemplate(templateId, isPremiumUser)) {
             toast.error(
                 isEn
-                    ? 'This is a premium template. Turn on Premium simulation to use it.'
-                    : 'Ini template premium. Aktifkan simulasi Premium untuk memakainya.'
+                    ? 'This is a premium template. Please login with a premium account to use it.'
+                    : 'Ini template premium. Silakan login dengan akun premium untuk memakainya.'
             );
             return;
         }
@@ -229,21 +229,6 @@ export default function SettingsTab() {
             <div className="section-header">
                 <h2>{t.settingsTitle}</h2>
                 <p className="section-desc">{t.settingsDesc}</p>
-            </div>
-
-            {/* Photo Toggle */}
-            <div className="settings-group">
-                <div className="setting-item">
-                    <div className="setting-info">
-                        <span className="setting-label">{t.showPhoto}</span>
-                        <span className="setting-desc">{t.showPhotoDesc}</span>
-                    </div>
-                    <label className="toggle-switch">
-                        <input type="checkbox" checked={settings.showPhoto}
-                            onChange={e => setSettings({ showPhoto: e.target.checked })} />
-                        <span className="toggle-slider" />
-                    </label>
-                </div>
             </div>
 
             {/* Typography */}
@@ -292,26 +277,6 @@ export default function SettingsTab() {
             <div className="settings-group">
                 <h3 className="settings-title">{t.themeColor}</h3>
                 <ColorPicker />
-            </div>
-
-            {/* Premium Access Simulation */}
-            <div className="settings-group">
-                <div className="setting-item">
-                    <div className="setting-info">
-                        <span className="setting-label">{isEn ? 'Premium Access (Simulation)' : 'Akses Premium (Simulasi)'}</span>
-                        <span className="setting-desc">
-                            {isEn ? 'Turn on to unlock premium templates for testing.' : 'Aktifkan untuk membuka template premium saat pengujian.'}
-                        </span>
-                    </div>
-                    <label className="toggle-switch">
-                        <input
-                            type="checkbox"
-                            checked={isPremiumUser}
-                            onChange={e => setSettings({ isPremiumUser: e.target.checked })}
-                        />
-                        <span className="toggle-slider" />
-                    </label>
-                </div>
             </div>
 
             {/* Template Selector */}
