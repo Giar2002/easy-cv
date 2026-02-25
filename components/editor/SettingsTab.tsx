@@ -216,8 +216,8 @@ export default function SettingsTab() {
         if (!canUseTemplate(templateId, isPremiumUser)) {
             toast.error(
                 isEn
-                    ? 'This template is part of ATS/Premium package. Please login with a premium account.'
-                    : 'Template ini termasuk paket ATS/Premium. Silakan login dengan akun premium.'
+                    ? 'This template is part of paid package. Please login with a premium account.'
+                    : 'Template ini termasuk paket berbayar. Silakan login dengan akun premium.'
             );
             return;
         }

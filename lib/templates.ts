@@ -76,8 +76,10 @@ export function isPremiumTemplate(templateId: string): boolean {
 }
 
 const LOCKED_FOR_FREE_CATEGORIES = new Set<TemplateCategory>(['premium', 'ats']);
+const LOCKED_FOR_FREE_TEMPLATE_IDS = new Set<string>(['sidebar-dark']);
 
 export function isLockedForFreeTemplate(templateId: string): boolean {
+    if (LOCKED_FOR_FREE_TEMPLATE_IDS.has(templateId)) return true;
     const category = getTemplateById(templateId)?.category;
     if (!category) return false;
     return LOCKED_FOR_FREE_CATEGORIES.has(category);
