@@ -1,6 +1,7 @@
 -- Run this in Supabase SQL Editor.
 -- Safe to re-run (idempotent).
--- Tracks AI + download usage per anonymous browser user per UTC day.
+-- Tracks AI usage per anonymous browser user per UTC day.
+-- Note: `download_requests` column is kept for backward compatibility.
 
 create table if not exists public.ai_usage_daily (
   anon_id text not null,

@@ -53,9 +53,8 @@ SUPABASE_AI_USAGE_TABLE=ai_usage_daily
 AI_LIMIT_SURVEY=1
 AI_LIMIT_SUMMARY=2
 AI_LIMIT_EXPERIENCE=2
-AI_ALLOW_CLIENT_PREMIUM_SIM=true
-FREE_DAILY_DOWNLOAD_LIMIT=1
-DOWNLOAD_ALLOW_CLIENT_PREMIUM_SIM=true
+FREE_MONTHLY_DOWNLOAD_LIMIT=1
+SUPABASE_DOWNLOAD_USAGE_TABLE=download_usage_monthly
 NEXT_PUBLIC_SUPABASE_SUBSCRIPTIONS_TABLE=user_subscriptions
 SUPABASE_SUBSCRIPTIONS_TABLE=user_subscriptions
 PREMIUM_TEST_EMAILS=
@@ -70,10 +69,10 @@ Catatan:
   - Experience Description AI: `2x/hari`
   - Bisa diubah lewat env di atas.
 - Limit hanya dikenakan ke user gratis. User premium melewati kuota harian/fitur.
-- Pada mode sekarang, premium mengikuti flag `isPremiumUser` dari client (untuk simulasi).
-- Download PDF untuk free dibatasi per hari (default `1x/hari`) melalui endpoint `app/api/download-access/route.ts`.
-- Jika user login Supabase dan punya row aktif di `user_subscriptions`, AI/download akan otomatis dianggap premium dari server-side.
-- Jika tabel belum dibuat atau Supabase tidak tersedia, app fallback ke burst limit 1 menit untuk mencegah spam.
+- Premium diputuskan dari server-side (`user_subscriptions` + `PREMIUM_TEST_EMAILS`), tidak lagi menerima bypass premium dari payload client.
+- Download PDF sekarang wajib login dan untuk user gratis dibatasi per bulan (default `1x/bulan`) melalui endpoint `app/api/download-access/route.ts`.
+- Jika user login Supabase dan punya row aktif di `user_subscriptions`, AI/download otomatis dianggap premium dari server-side.
+- Untuk AI, jika tabel kuota belum siap, app fallback ke burst limit 1 menit untuk mencegah spam.
 
 ## Environment Variables
 
@@ -89,9 +88,8 @@ Lihat `.env.example`:
 - `AI_LIMIT_SURVEY`: batas AI untuk onboarding survey per hari (default `1`).
 - `AI_LIMIT_SUMMARY`: batas AI untuk profile summary per hari (default `2`).
 - `AI_LIMIT_EXPERIENCE`: batas AI untuk description work experience per hari (default `2`).
-- `AI_ALLOW_CLIENT_PREMIUM_SIM`: izinkan bypass limit dari flag premium di client (default `true`; set `false` jika ingin mode ketat production).
-- `FREE_DAILY_DOWNLOAD_LIMIT`: batas download PDF gratis per hari (default `1`).
-- `DOWNLOAD_ALLOW_CLIENT_PREMIUM_SIM`: izinkan bypass limit download dari flag premium client saat simulasi (default `true`).
+- `FREE_MONTHLY_DOWNLOAD_LIMIT`: batas download PDF gratis per bulan per akun login (default `1`).
+- `SUPABASE_DOWNLOAD_USAGE_TABLE`: nama tabel kuota download bulanan (default `download_usage_monthly`).
 - `NEXT_PUBLIC_SUPABASE_SUBSCRIPTIONS_TABLE`: nama tabel subscription untuk cek status plan di UI client (default `user_subscriptions`).
 - `SUPABASE_SUBSCRIPTIONS_TABLE`: nama tabel subscription user login (default `user_subscriptions`).
 - `PREMIUM_TEST_EMAILS`: daftar email dipisah koma yang otomatis dianggap premium setelah login (untuk testing internal).
@@ -112,6 +110,14 @@ Lihat `.env.example`:
 1. Buka Supabase SQL Editor.
 2. Jalankan file `supabase/feedback.sql`.
 3. Feedback dari modal setelah download CV akan disimpan ke tabel `cv_feedback`.
+
+## Setup Download Usage Table (Wajib untuk limit download bulanan)
+
+1. Buka Supabase SQL Editor.
+2. Jalankan file `supabase/download_usage_monthly.sql`.
+3. Pastikan env:
+   - `FREE_MONTHLY_DOWNLOAD_LIMIT=1`
+   - `SUPABASE_DOWNLOAD_USAGE_TABLE=download_usage_monthly`
 
 ## Catatan Keamanan
 

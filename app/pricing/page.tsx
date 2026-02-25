@@ -63,9 +63,10 @@ export default function PricingPage() {
                         <div className="pricing-price">{isEn ? '$0' : 'Rp0'}</div>
                         <ul className="pricing-list">
                             <li>{isEn ? '1 active CV' : '1 CV aktif'}</li>
-                            <li>{isEn ? 'Free templates' : 'Template gratis'}</li>
-                            <li>{isEn ? 'AI daily limits (free quota)' : 'AI dibatasi kuota harian'}</li>
-                            <li>{isEn ? '1 PDF download/day' : '1 download PDF/hari'}</li>
+                            <li>{isEn ? 'Standard templates only' : 'Hanya template standar'}</li>
+                            <li>{isEn ? 'ATS and premium templates locked' : 'Template ATS dan premium terkunci'}</li>
+                            <li>{isEn ? 'AI daily limits (1/2/2)' : 'AI dibatasi kuota harian (1/2/2)'}</li>
+                            <li>{isEn ? '1 PDF download/month (login required)' : '1 download PDF/bulan (wajib login)'}</li>
                             <li>{isEn ? 'Local browser storage' : 'Penyimpanan lokal browser'}</li>
                         </ul>
                         <Link href="/builder" className="btn btn-secondary pricing-btn">
@@ -79,8 +80,8 @@ export default function PricingPage() {
                         <div className="pricing-price">{isEn ? '$6 / month' : 'Rp99rb / bulan'}</div>
                         <ul className="pricing-list">
                             <li>{isEn ? 'Up to 10 CVs' : 'Maksimal 10 CV'}</li>
-                            <li>{isEn ? 'All premium templates' : 'Semua template premium'}</li>
-                            <li>{isEn ? 'Higher AI limits' : 'Limit AI lebih besar'}</li>
+                            <li>{isEn ? 'ATS + all premium templates' : 'Template ATS + semua premium'}</li>
+                            <li>{isEn ? 'AI access without free quota limits' : 'Akses AI tanpa limit kuota gratis'}</li>
                             <li>{isEn ? 'Unlimited PDF downloads' : 'Download PDF tanpa batas'}</li>
                             <li>{isEn ? 'Cloud sync' : 'Sinkronisasi cloud'}</li>
                         </ul>

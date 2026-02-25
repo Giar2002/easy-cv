@@ -16,7 +16,6 @@ interface AIAssistantButtonProps {
 
 export default function AIAssistantButton({ value, onApply, feature = 'general' }: AIAssistantButtonProps) {
     const language = useCVStore(s => s.settings.language) || 'id';
-    const isPremiumUser = Boolean(useCVStore(s => s.settings.isPremiumUser));
     const openUpgradeModal = useUpgradeModalStore(s => s.openModal);
     const isEn = language === 'en';
     const [loading, setLoading] = useState(false);
@@ -48,7 +47,7 @@ export default function AIAssistantButton({ value, onApply, feature = 'general' 
             const res = await fetch('/api/ai', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...authHeader },
-                body: JSON.stringify({ text: value, action: action, feature, isPremiumUser })
+                body: JSON.stringify({ text: value, action: action, feature })
             });
             const data = await res.json();
 

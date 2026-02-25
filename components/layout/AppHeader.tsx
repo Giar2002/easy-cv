@@ -190,7 +190,6 @@ export default function AppHeader() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...authHeader },
                 body: JSON.stringify({
-                    isPremiumUser: Boolean(settings.isPremiumUser),
                     language: settings.language || 'en',
                 }),
             });
@@ -214,8 +213,8 @@ export default function AppHeader() {
             if (!data?.premium && typeof data?.remaining === 'number' && data.remaining >= 0) {
                 toast.success(
                     language === 'en'
-                        ? `Download success. Remaining free downloads today: ${data.remaining}.`
-                        : `Download berhasil. Sisa download gratis hari ini: ${data.remaining}.`
+                        ? `Download success. Remaining free downloads this month: ${data.remaining}.`
+                        : `Download berhasil. Sisa download gratis bulan ini: ${data.remaining}.`
                 );
             }
         } catch {

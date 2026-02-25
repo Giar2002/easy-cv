@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCVStore } from '@/store/useCVStore';
-import { TEMPLATES, TEMPLATE_CATEGORIES, canUseTemplate, isPremiumTemplate } from '@/lib/templates';
+import { TEMPLATES, TEMPLATE_CATEGORIES, canUseTemplate, isLockedForFreeTemplate } from '@/lib/templates';
 import { TemplateCategory } from '@/types/cv';
 import TemplateThumbnail from '@/components/editor/TemplateThumbnails';
 import { ArrowLeft } from 'lucide-react';
@@ -27,8 +27,8 @@ export default function TemplatesPage() {
         if (!canUseTemplate(id, isPremiumUser)) {
             toast.error(
                 language === 'en'
-                    ? 'This is a premium template. Please login with a premium account to use it.'
-                    : 'Ini template premium. Silakan login dengan akun premium untuk memakainya.'
+                    ? 'This template is part of ATS/Premium package. Please login with a premium account.'
+                    : 'Template ini termasuk paket ATS/Premium. Silakan login dengan akun premium.'
             );
             return;
         }
@@ -58,7 +58,9 @@ export default function TemplatesPage() {
                             {isEn ? 'Choose Your CV Template' : 'Pilih Template CV Anda'}
                         </h1>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', margin: 0 }}>
-                            {isEn ? 'All templates are ATS-friendly and professionally designed.' : 'Semua template dioptimalkan untuk ATS dan desain profesional.'}
+                            {isEn
+                                ? 'Choose from free templates or unlock ATS and premium templates with Pro.'
+                                : 'Pilih template gratis atau buka template ATS dan premium dengan Pro.'}
                         </p>
                     </div>
                 </div>
@@ -94,7 +96,7 @@ export default function TemplatesPage() {
                 {/* Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '2rem' }}>
                     {filteredTemplates.map(tpl => {
-                        const isLocked = isPremiumTemplate(tpl.id) && !isPremiumUser;
+                        const isLocked = isLockedForFreeTemplate(tpl.id) && !isPremiumUser;
                         return (
                         <div
                             key={tpl.id}

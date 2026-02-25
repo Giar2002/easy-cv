@@ -75,8 +75,16 @@ export function isPremiumTemplate(templateId: string): boolean {
     return getTemplateById(templateId)?.category === 'premium';
 }
 
+const LOCKED_FOR_FREE_CATEGORIES = new Set<TemplateCategory>(['premium', 'ats']);
+
+export function isLockedForFreeTemplate(templateId: string): boolean {
+    const category = getTemplateById(templateId)?.category;
+    if (!category) return false;
+    return LOCKED_FOR_FREE_CATEGORIES.has(category);
+}
+
 export function canUseTemplate(templateId: string, isPremiumUser?: boolean): boolean {
-    if (!isPremiumTemplate(templateId)) return true;
+    if (!isLockedForFreeTemplate(templateId)) return true;
     return Boolean(isPremiumUser);
 }
 

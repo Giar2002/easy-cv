@@ -83,8 +83,7 @@ export default function OnboardingWizard() {
                     body: JSON.stringify({
                         text: summaryPrompt,
                         action: 'enhance',
-                        feature: 'survey',
-                        isPremiumUser: settings.isPremiumUser
+                        feature: 'survey'
                     })
                 }),
                 fetch('/api/ai', {
@@ -93,8 +92,7 @@ export default function OnboardingWizard() {
                     body: JSON.stringify({
                         text: skillsPrompt,
                         action: 'generate-skills',
-                        feature: 'skills',
-                        isPremiumUser: settings.isPremiumUser
+                        feature: 'skills'
                     })
                 })
             ]);

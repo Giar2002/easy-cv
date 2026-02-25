@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import { useCVStore } from '@/store/useCVStore';
-import { TEMPLATES, TEMPLATE_CATEGORIES, canUseTemplate, isPremiumTemplate } from '@/lib/templates';
+import { TEMPLATES, TEMPLATE_CATEGORIES, canUseTemplate, isLockedForFreeTemplate } from '@/lib/templates';
 import { TemplateCategory } from '@/types/cv';
 import { useState } from 'react';
 import TemplateThumbnail from './TemplateThumbnails';
@@ -216,8 +216,8 @@ export default function SettingsTab() {
         if (!canUseTemplate(templateId, isPremiumUser)) {
             toast.error(
                 isEn
-                    ? 'This is a premium template. Please login with a premium account to use it.'
-                    : 'Ini template premium. Silakan login dengan akun premium untuk memakainya.'
+                    ? 'This template is part of ATS/Premium package. Please login with a premium account.'
+                    : 'Template ini termasuk paket ATS/Premium. Silakan login dengan akun premium.'
             );
             return;
         }
@@ -293,7 +293,7 @@ export default function SettingsTab() {
                 <h3 className="settings-title" style={{ marginTop: '0.75rem' }}>{t.selectTemplate}</h3>
                 <div className="template-grid">
                     {filteredTemplates.map(tpl => {
-                        const isLocked = isPremiumTemplate(tpl.id) && !isPremiumUser;
+                        const isLocked = isLockedForFreeTemplate(tpl.id) && !isPremiumUser;
                         return (
                         <div key={tpl.id}
                             className={`template-card ${settings.template === tpl.id ? 'active' : ''} ${isLocked ? 'locked' : ''}`}

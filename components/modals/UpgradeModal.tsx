@@ -43,16 +43,18 @@ export default function UpgradeModal() {
                             <h4>{isEn ? 'Free' : 'Gratis'}</h4>
                             <ul>
                                 <li>{isEn ? '1 active CV' : '1 CV aktif'}</li>
-                                <li>{isEn ? 'Limited AI quota' : 'Kuota AI terbatas'}</li>
-                                <li>{isEn ? '1 PDF/day' : '1 PDF/hari'}</li>
+                                <li>{isEn ? 'AI quota 1/2/2 per day' : 'Kuota AI 1/2/2 per hari'}</li>
+                                <li>{isEn ? '1 PDF/month (login required)' : '1 PDF/bulan (wajib login)'}</li>
+                                <li>{isEn ? 'Standard templates only' : 'Hanya template standar'}</li>
                             </ul>
                         </div>
                         <div className="upgrade-col featured">
                             <h4>Pro</h4>
                             <ul>
                                 <li>{isEn ? 'Up to 10 CVs' : 'Maks 10 CV'}</li>
-                                <li>{isEn ? 'Higher AI limit' : 'Limit AI lebih tinggi'}</li>
+                                <li>{isEn ? 'Unlimited AI usage' : 'Akses AI tanpa batas'}</li>
                                 <li>{isEn ? 'Unlimited PDF' : 'PDF tanpa batas'}</li>
+                                <li>{isEn ? 'ATS + premium templates' : 'Template ATS + premium'}</li>
                             </ul>
                         </div>
                     </div>

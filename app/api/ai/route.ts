@@ -9,7 +9,6 @@ const USAGE_TABLE = process.env.SUPABASE_AI_USAGE_TABLE || 'ai_usage_daily';
 const FEATURE_LIMIT_SURVEY = Number(process.env.AI_LIMIT_SURVEY || 1);
 const FEATURE_LIMIT_SUMMARY = Number(process.env.AI_LIMIT_SUMMARY || 2);
 const FEATURE_LIMIT_EXPERIENCE = Number(process.env.AI_LIMIT_EXPERIENCE || 2);
-const ALLOW_CLIENT_PREMIUM_SIM = process.env.AI_ALLOW_CLIENT_PREMIUM_SIM !== 'false';
 
 // Burst limiter in-memory (per anonymous user) to prevent spam
 const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
@@ -91,11 +90,6 @@ function getFeatureLimitMessage(feature: AIQuotaFeature): string {
         return `Batas AI Description Experience sudah habis untuk hari ini (${FEATURE_LIMITS.experience}x).`;
     }
     return 'Batas AI fitur ini sudah habis untuk hari ini.';
-}
-
-function isPremiumRequest(rawValue: unknown): boolean {
-    if (!ALLOW_CLIENT_PREMIUM_SIM) return false;
-    return rawValue === true;
 }
 
 function buildAnonId(seed?: string): { anonId: string; shouldSetCookie: boolean } {
@@ -287,7 +281,7 @@ export async function POST(req: NextRequest) {
         const action = typeof payload?.action === 'string' ? payload.action : '';
         const feature = normalizeFeature(payload?.feature, action);
         const serverPlan = await resolveServerPlan(req);
-        const isPremiumUser = serverPlan.isPremium || isPremiumRequest(payload?.isPremiumUser);
+        const isPremiumUser = serverPlan.isPremium;
 
         const now = Date.now();
         const limitData = rateLimitMap.get(anonId);

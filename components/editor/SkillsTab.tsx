@@ -84,13 +84,11 @@ function AiSkillSuggester({
     onAddMultiple,
     t,
     isEn,
-    isPremiumUser,
 }: {
     jobTitle: string;
     onAddMultiple: (names: string[]) => void;
     t: ReturnType<typeof getTranslations>;
     isEn: boolean;
-    isPremiumUser: boolean;
 }) {
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -122,7 +120,7 @@ function AiSkillSuggester({
             const res = await fetch('/api/ai', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...authHeader },
-                body: JSON.stringify({ text: requestText, action: 'generate-skills', feature: 'skills', isPremiumUser })
+                body: JSON.stringify({ text: requestText, action: 'generate-skills', feature: 'skills' })
             });
             const data = await res.json();
 
@@ -184,7 +182,6 @@ function AiSkillSuggester({
 export default function SkillsTab() {
     const skills = useCVStore(s => s.skills);
     const jobTitle = useCVStore(s => s.personal.jobTitle);
-    const isPremiumUser = Boolean(useCVStore(s => s.settings.isPremiumUser));
     const addSkill = useCVStore(s => s.addSkill);
     const updateSkill = useCVStore(s => s.updateSkill);
     const removeSkill = useCVStore(s => s.removeSkill);
@@ -250,7 +247,7 @@ export default function SkillsTab() {
                 <p className="section-desc">{t.skillsDesc} {texts.multiSkillHint}</p>
             </div>
 
-            <AiSkillSuggester jobTitle={jobTitle} onAddMultiple={handleAddMultiple} t={t} isEn={isEn} isPremiumUser={isPremiumUser} />
+            <AiSkillSuggester jobTitle={jobTitle} onAddMultiple={handleAddMultiple} t={t} isEn={isEn} />
 
             <div className="bulk-skill-card">
                 <label className="bulk-skill-label">
