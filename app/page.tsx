@@ -55,11 +55,13 @@ export default function LandingPage() {
   const promo = isEn
     ? {
       badge: 'Limited-Time Offer',
-      title: 'Free vs Premium in EasY CV',
-      subtitle: 'Start free, upgrade only when you need more power.',
+      title: 'Free, Pro Daily, or Premium Monthly',
+      subtitle: 'Start free, then choose based on your job-hunting intensity.',
       free: 'Free',
-      premium: 'Premium',
+      pro: 'Pro Daily',
+      premium: 'Premium Monthly',
       freeItems: ['1 active CV', 'AI limits (1/2/2 per day)', '1 PDF download/month (login required)', 'Standard templates only'],
+      proItems: ['All templates unlocked', 'Unlimited AI usage', 'Limited PDF/day (default 3)', 'Short-term focused plan'],
       premiumItems: ['Up to 10 CVs', 'Unlimited AI usage', 'Unlimited PDF downloads', 'ATS + premium templates + cloud sync'],
       later: 'Maybe later',
       hideToday: "Don't show today",
@@ -67,11 +69,13 @@ export default function LandingPage() {
     }
     : {
       badge: 'Penawaran Terbatas',
-      title: 'Perbandingan Free vs Premium',
-      subtitle: 'Mulai gratis, upgrade saat butuh fitur lebih lengkap.',
+      title: 'Pilih Gratis, Pro Harian, atau Premium Bulanan',
+      subtitle: 'Mulai gratis, lalu upgrade sesuai kebutuhanmu.',
       free: 'Gratis',
-      premium: 'Premium',
+      pro: 'Pro Harian',
+      premium: 'Premium Bulanan',
       freeItems: ['1 CV aktif', 'Kuota AI harian (1/2/2)', '1 download PDF/bulan (wajib login)', 'Hanya template standar'],
+      proItems: ['Semua template terbuka', 'Akses AI tanpa batas', 'PDF harian terbatas (default 3)', 'Paket singkat yang fleksibel'],
       premiumItems: ['Maksimal 10 CV', 'Akses AI tanpa batas', 'Download PDF tanpa batas', 'Template ATS + premium + cloud sync'],
       later: 'Nanti saja',
       hideToday: 'Sembunyikan hari ini',
@@ -367,6 +371,12 @@ export default function LandingPage() {
                 <h4>{promo.free}</h4>
                 <ul>
                   {promo.freeItems.map(item => <li key={item}>{item}</li>)}
+                </ul>
+              </article>
+              <article className="landing-promo-plan">
+                <h4>{promo.pro}</h4>
+                <ul>
+                  {promo.proItems.map(item => <li key={item}>{item}</li>)}
                 </ul>
               </article>
               <article className="landing-promo-plan featured">

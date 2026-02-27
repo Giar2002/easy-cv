@@ -42,35 +42,44 @@ function getBearerToken(req: NextRequest): string | null {
 
 export type ServerPlanResult = {
     isPremium: boolean;
+    tier: 'free' | 'pro-daily' | 'premium-monthly';
+    subscriptionPlan: string | null;
     userId: string | null;
     reason: 'server-premium' | 'server-free' | 'no-token' | 'unavailable' | 'error';
 };
 
+function resolveTierFromPlan(plan: unknown): 'free' | 'pro-daily' | 'premium-monthly' {
+    const normalized = String(plan || '').trim().toLowerCase();
+    if (normalized === 'pro') return 'pro-daily';
+    if (normalized === 'premium' || normalized === 'business') return 'premium-monthly';
+    return 'free';
+}
+
 export async function resolveServerPlan(req: NextRequest): Promise<ServerPlanResult> {
     if (!hasSupabaseServerEnv()) {
-        return { isPremium: false, userId: null, reason: 'unavailable' };
+        return { isPremium: false, tier: 'free', subscriptionPlan: null, userId: null, reason: 'unavailable' };
     }
 
     const token = getBearerToken(req);
     if (!token) {
-        return { isPremium: false, userId: null, reason: 'no-token' };
+        return { isPremium: false, tier: 'free', subscriptionPlan: null, userId: null, reason: 'no-token' };
     }
 
     const supabase = getSupabaseServiceClient();
     if (!supabase) {
-        return { isPremium: false, userId: null, reason: 'unavailable' };
+        return { isPremium: false, tier: 'free', subscriptionPlan: null, userId: null, reason: 'unavailable' };
     }
 
     try {
         const { data: authData, error: userError } = await supabase.auth.getUser(token);
         if (userError || !authData?.user?.id) {
-            return { isPremium: false, userId: null, reason: 'error' };
+            return { isPremium: false, tier: 'free', subscriptionPlan: null, userId: null, reason: 'error' };
         }
 
         const userId = authData.user.id;
         const userEmail = String(authData.user.email || '').toLowerCase();
         if (userEmail && PREMIUM_TEST_EMAILS.includes(userEmail)) {
-            return { isPremium: true, userId, reason: 'server-premium' };
+            return { isPremium: true, tier: 'premium-monthly', subscriptionPlan: 'premium-test', userId, reason: 'server-premium' };
         }
 
         const { data: subData, error: subError } = await supabase
@@ -80,20 +89,23 @@ export async function resolveServerPlan(req: NextRequest): Promise<ServerPlanRes
             .maybeSingle();
 
         if (subError || !subData) {
-            return { isPremium: false, userId, reason: 'server-free' };
+            return { isPremium: false, tier: 'free', subscriptionPlan: null, userId, reason: 'server-free' };
         }
 
+        const subscriptionPlan = String(subData.plan || '').toLowerCase() || null;
         const status = String(subData.status || '').toLowerCase();
         const allowedStatus = status === 'active' || status === 'trialing';
         const periodEnd = subData.current_period_end ? new Date(subData.current_period_end).getTime() : null;
         const notExpired = periodEnd === null || Number.isNaN(periodEnd) || periodEnd >= Date.now();
 
         if (allowedStatus && notExpired) {
-            return { isPremium: true, userId, reason: 'server-premium' };
+            const tier = resolveTierFromPlan(subData.plan);
+            const isPremium = tier !== 'free';
+            return { isPremium, tier, subscriptionPlan, userId, reason: isPremium ? 'server-premium' : 'server-free' };
         }
 
-        return { isPremium: false, userId, reason: 'server-free' };
+        return { isPremium: false, tier: 'free', subscriptionPlan, userId, reason: 'server-free' };
     } catch {
-        return { isPremium: false, userId: null, reason: 'error' };
+        return { isPremium: false, tier: 'free', subscriptionPlan: null, userId: null, reason: 'error' };
     }
 }

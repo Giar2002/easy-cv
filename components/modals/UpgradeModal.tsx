@@ -32,7 +32,7 @@ export default function UpgradeModal() {
             <div className="modal-overlay" onClick={closeModal} />
             <div className="modal-content upgrade-modal-content">
                 <div className="modal-header">
-                    <h3>{isEn ? 'Unlock Pro Features' : 'Buka Fitur Pro'}</h3>
+                    <h3>{isEn ? 'Choose Your Plan' : 'Pilih Paket Anda'}</h3>
                     <button className="modal-close" onClick={closeModal}>×</button>
                 </div>
                 <div className="modal-body">
@@ -49,11 +49,20 @@ export default function UpgradeModal() {
                             </ul>
                         </div>
                         <div className="upgrade-col featured">
-                            <h4>Pro</h4>
+                            <h4>{isEn ? 'Pro Daily' : 'Pro Harian'}</h4>
+                            <ul>
+                                <li>{isEn ? 'All templates unlocked' : 'Semua template terbuka'}</li>
+                                <li>{isEn ? 'Unlimited AI usage' : 'Akses AI tanpa batas'}</li>
+                                <li>{isEn ? 'Limited PDF/day (default 3)' : 'PDF harian terbatas (default 3)'}</li>
+                                <li>{isEn ? 'Best for short-term use' : 'Cocok untuk pemakaian singkat'}</li>
+                            </ul>
+                        </div>
+                        <div className="upgrade-col">
+                            <h4>{isEn ? 'Premium Monthly' : 'Premium Bulanan'}</h4>
                             <ul>
                                 <li>{isEn ? 'Up to 10 CVs' : 'Maks 10 CV'}</li>
                                 <li>{isEn ? 'Unlimited AI usage' : 'Akses AI tanpa batas'}</li>
-                                <li>{isEn ? 'Unlimited PDF' : 'PDF tanpa batas'}</li>
+                                <li>{isEn ? 'Unlimited PDF downloads' : 'Download PDF tanpa batas'}</li>
                                 <li>{isEn ? 'ATS + premium templates' : 'Template ATS + premium'}</li>
                             </ul>
                         </div>

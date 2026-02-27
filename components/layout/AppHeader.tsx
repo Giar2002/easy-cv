@@ -27,7 +27,7 @@ export default function AppHeader() {
     const [authEmailInput, setAuthEmailInput] = useState('');
     const [authBusy, setAuthBusy] = useState(false);
     const [authUserEmail, setAuthUserEmail] = useState<string | null>(null);
-    const [authPremium, setAuthPremium] = useState(false);
+    const [authPlan, setAuthPlan] = useState<'free' | 'pro' | 'premium'>('free');
     const [feedbackText, setFeedbackText] = useState('');
     const [feedbackRating, setFeedbackRating] = useState(5);
     const [feedbackBusy, setFeedbackBusy] = useState(false);
@@ -38,8 +38,9 @@ export default function AppHeader() {
     const authText = {
         login: isEn ? 'Login' : 'Masuk',
         logout: isEn ? 'Logout' : 'Keluar',
-        premium: isEn ? 'Premium' : 'Premium',
         free: isEn ? 'Free' : 'Gratis',
+        proDaily: isEn ? 'Pro Daily' : 'Pro Harian',
+        premiumMonthly: isEn ? 'Premium Monthly' : 'Premium Bulanan',
         openAuth: isEn ? 'Open login modal' : 'Buka modal login',
         authTitle: isEn ? 'Account Access' : 'Akses Akun',
         authDesc: isEn ? 'Login with magic link to sync your premium plan.' : 'Masuk dengan magic link untuk sinkronisasi paket premium.',
@@ -70,6 +71,25 @@ export default function AppHeader() {
         return endMs >= Date.now();
     }
 
+    function normalizeAuthPlan(rawPlan: unknown): 'free' | 'pro' | 'premium' {
+        const normalized = String(rawPlan || '').toLowerCase();
+        if (normalized === 'pro') return 'pro';
+        if (normalized === 'premium' || normalized === 'business') return 'premium';
+        return 'free';
+    }
+
+    function getPlanChipLabel(): string {
+        if (authPlan === 'pro') return authText.proDaily;
+        if (authPlan === 'premium') return authText.premiumMonthly;
+        return authText.free;
+    }
+
+    function getPlanChipClass(): 'free' | 'pro' | 'premium' {
+        if (authPlan === 'pro') return 'pro';
+        if (authPlan === 'premium') return 'premium';
+        return 'free';
+    }
+
     async function syncAuthSession() {
         if (!authEnabled) return;
         const supabase = getSupabaseBrowserClient();
@@ -79,25 +99,28 @@ export default function AppHeader() {
         const session = data?.session;
         if (!session?.user) {
             setAuthUserEmail(null);
-            setAuthPremium(false);
+            setAuthPlan('free');
             setSettings({ isPremiumUser: false });
             return;
         }
 
         setAuthUserEmail(session.user.email || null);
         let premium = false;
+        let plan: 'free' | 'pro' | 'premium' = 'free';
         try {
             const { data: subData } = await supabase
                 .from(SUBSCRIPTIONS_TABLE)
-                .select('status,current_period_end')
+                .select('plan,status,current_period_end')
                 .eq('user_id', session.user.id)
                 .maybeSingle();
             premium = isActivePremium(subData?.status, subData?.current_period_end);
+            plan = premium ? normalizeAuthPlan(subData?.plan) : 'free';
         } catch {
             premium = false;
+            plan = 'free';
         }
 
-        setAuthPremium(premium);
+        setAuthPlan(plan);
         setSettings({ isPremiumUser: premium });
     }
 
@@ -169,7 +192,7 @@ export default function AppHeader() {
         try {
             const { error } = await supabase.auth.signOut();
             if (error) throw error;
-            setAuthPremium(false);
+            setAuthPlan('free');
             setAuthUserEmail(null);
             setSettings({ isPremiumUser: false });
             toast.success(authText.logoutSuccess);
@@ -210,11 +233,16 @@ export default function AppHeader() {
 
             window.print();
             setShowFeedbackModal(true);
-            if (!data?.premium && typeof data?.remaining === 'number' && data.remaining >= 0) {
+            if (typeof data?.remaining === 'number' && data.remaining >= 0) {
+                const period = data?.period === 'daily' ? 'daily' : 'monthly';
                 toast.success(
-                    language === 'en'
-                        ? `Download success. Remaining free downloads this month: ${data.remaining}.`
-                        : `Download berhasil. Sisa download gratis bulan ini: ${data.remaining}.`
+                    period === 'daily'
+                        ? (language === 'en'
+                            ? `Download success. Remaining downloads today: ${data.remaining}.`
+                            : `Download berhasil. Sisa download hari ini: ${data.remaining}.`)
+                        : (language === 'en'
+                            ? `Download success. Remaining downloads this month: ${data.remaining}.`
+                            : `Download berhasil. Sisa download bulan ini: ${data.remaining}.`)
                 );
             }
         } catch {
@@ -371,8 +399,8 @@ export default function AppHeader() {
                         {authEnabled && (
                             <button className="btn btn-ghost btn-hide-mobile btn-collapse-xl auth-account-btn" onClick={() => setShowAuthModal(true)} title={authText.openAuth}>
                                 <span className="btn-label">{authUserEmail ? authUserEmail : authText.login}</span>
-                                <span className={`auth-plan-chip ${authPremium ? 'premium' : 'free'}`}>
-                                    {authPremium ? authText.premium : authText.free}
+                                <span className={`auth-plan-chip ${getPlanChipClass()}`}>
+                                    {getPlanChipLabel()}
                                 </span>
                             </button>
                         )}
@@ -459,8 +487,8 @@ export default function AppHeader() {
                                 <>
                                     <div className="auth-user-row">
                                         <span>{authUserEmail}</span>
-                                        <span className={`auth-plan-chip ${authPremium ? 'premium' : 'free'}`}>
-                                            {authPremium ? authText.premium : authText.free}
+                                        <span className={`auth-plan-chip ${getPlanChipClass()}`}>
+                                            {getPlanChipLabel()}
                                         </span>
                                     </div>
                                     <button className="btn btn-ghost" onClick={handleLogout} disabled={authBusy}>

@@ -52,8 +52,8 @@ export default function PricingPage() {
                     <h1>{isEn ? 'Choose your plan' : 'Pilih paket Anda'}</h1>
                     <p>
                         {isEn
-                            ? 'Free for starters, Pro for job seekers who need speed and scale.'
-                            : 'Gratis untuk memulai, Pro untuk pencari kerja yang butuh kecepatan dan skala.'}
+                            ? 'Start free, then choose Pro Daily or Premium Monthly based on your job-hunting intensity.'
+                            : 'Mulai gratis, lalu pilih Pro Harian atau Premium Bulanan sesuai intensitas cari kerja kamu.'}
                     </p>
                 </section>
 
@@ -74,9 +74,23 @@ export default function PricingPage() {
                         </Link>
                     </article>
 
+                    <article className="pricing-card">
+                        <div className="pricing-tier">{isEn ? 'Pro Daily' : 'Pro Harian'}</div>
+                        <div className="pricing-price">{isEn ? '$1 / day' : 'Rp15rb / hari'}</div>
+                        <ul className="pricing-list">
+                            <li>{isEn ? 'All templates unlocked (ATS + premium)' : 'Semua template terbuka (ATS + premium)'}</li>
+                            <li>{isEn ? 'AI access without free quota limits' : 'Akses AI tanpa limit kuota gratis'}</li>
+                            <li>{isEn ? 'Limited PDF downloads/day (more than free)' : 'Download PDF harian terbatas (lebih banyak dari gratis)'}</li>
+                            <li>{isEn ? 'Good for short, focused usage' : 'Cocok untuk pemakaian singkat'}</li>
+                        </ul>
+                        <button className="btn btn-secondary pricing-btn" type="button">
+                            {isEn ? 'Upgrade to Pro Daily (Coming Soon)' : 'Upgrade ke Pro Harian (Segera)'}
+                        </button>
+                    </article>
+
                     <article className="pricing-card featured">
                         <div className="pricing-badge">{isEn ? 'Recommended' : 'Rekomendasi'}</div>
-                        <div className="pricing-tier">Pro</div>
+                        <div className="pricing-tier">{isEn ? 'Premium Monthly' : 'Premium Bulanan'}</div>
                         <div className="pricing-price">{isEn ? '$6 / month' : 'Rp99rb / bulan'}</div>
                         <ul className="pricing-list">
                             <li>{isEn ? 'Up to 10 CVs' : 'Maksimal 10 CV'}</li>
@@ -86,7 +100,7 @@ export default function PricingPage() {
                             <li>{isEn ? 'Cloud sync' : 'Sinkronisasi cloud'}</li>
                         </ul>
                         <button className="btn btn-primary pricing-btn" type="button">
-                            {isEn ? 'Upgrade to Pro (Coming Soon)' : 'Upgrade ke Pro (Segera)'}
+                            {isEn ? 'Upgrade to Premium (Coming Soon)' : 'Upgrade ke Premium (Segera)'}
                         </button>
                     </article>
                 </section>

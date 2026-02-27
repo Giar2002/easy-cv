@@ -54,6 +54,7 @@ AI_LIMIT_SURVEY=1
 AI_LIMIT_SUMMARY=2
 AI_LIMIT_EXPERIENCE=2
 FREE_MONTHLY_DOWNLOAD_LIMIT=1
+PRO_DAILY_DOWNLOAD_LIMIT=3
 SUPABASE_DOWNLOAD_USAGE_TABLE=download_usage_monthly
 NEXT_PUBLIC_SUPABASE_SUBSCRIPTIONS_TABLE=user_subscriptions
 SUPABASE_SUBSCRIPTIONS_TABLE=user_subscriptions
@@ -71,6 +72,7 @@ Catatan:
 - Limit hanya dikenakan ke user gratis. User premium melewati kuota harian/fitur.
 - Premium diputuskan dari server-side (`user_subscriptions` + `PREMIUM_TEST_EMAILS`), tidak lagi menerima bypass premium dari payload client.
 - Download PDF sekarang wajib login dan untuk user gratis dibatasi per bulan (default `1x/bulan`) melalui endpoint `app/api/download-access/route.ts`.
+- User `pro` (Pro Daily) mendapat semua template + AI tanpa batas, dengan limit download PDF per hari (default `3x/hari`).
 - Jika user login Supabase dan punya row aktif di `user_subscriptions`, AI/download otomatis dianggap premium dari server-side.
 - Untuk AI, jika tabel kuota belum siap, app fallback ke burst limit 1 menit untuk mencegah spam.
 
@@ -89,6 +91,7 @@ Lihat `.env.example`:
 - `AI_LIMIT_SUMMARY`: batas AI untuk profile summary per hari (default `2`).
 - `AI_LIMIT_EXPERIENCE`: batas AI untuk description work experience per hari (default `2`).
 - `FREE_MONTHLY_DOWNLOAD_LIMIT`: batas download PDF gratis per bulan per akun login (default `1`).
+- `PRO_DAILY_DOWNLOAD_LIMIT`: batas download PDF harian untuk plan `pro` (default `3`).
 - `SUPABASE_DOWNLOAD_USAGE_TABLE`: nama tabel kuota download bulanan (default `download_usage_monthly`).
 - `NEXT_PUBLIC_SUPABASE_SUBSCRIPTIONS_TABLE`: nama tabel subscription untuk cek status plan di UI client (default `user_subscriptions`).
 - `SUPABASE_SUBSCRIPTIONS_TABLE`: nama tabel subscription user login (default `user_subscriptions`).
@@ -101,7 +104,7 @@ Lihat `.env.example`:
 2. Jalankan file `supabase/user_subscriptions.sql`.
 3. Saat user berlangganan, insert/update row user di tabel ini:
    - `user_id`: id dari `auth.users`
-   - `plan`: `pro` atau `premium`
+   - `plan`: `pro` (Pro Daily) atau `premium`/`business` (Premium Monthly)
    - `status`: `active` atau `trialing`
    - `current_period_end`: tanggal berakhir paket (boleh null untuk lifetime)
 
@@ -117,7 +120,11 @@ Lihat `.env.example`:
 2. Jalankan file `supabase/download_usage_monthly.sql`.
 3. Pastikan env:
    - `FREE_MONTHLY_DOWNLOAD_LIMIT=1`
+   - `PRO_DAILY_DOWNLOAD_LIMIT=3`
    - `SUPABASE_DOWNLOAD_USAGE_TABLE=download_usage_monthly`
+
+Catatan:
+- Kuota `pro` harian diambil dari tabel AI usage (`ai_usage_daily.download_requests`) agar reset harian otomatis per UTC.
 
 ## Catatan Keamanan
 
