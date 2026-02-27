@@ -60,6 +60,24 @@ export const TEMPLATE_CATEGORIES: Record<TemplateCategory, { name: string; icon:
     layout: { name: 'Layout Variants', icon: '📐', desc: 'Variasi layout unik' },
 };
 
+export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, { id: string; en: string }> = {
+    all: { id: 'Semua Template', en: 'All Templates' },
+    popular: { id: 'Populer', en: 'Popular' },
+    premium: { id: 'Premium', en: 'Premium' },
+    ats: { id: 'ATS-Friendly', en: 'ATS-Friendly' },
+    general: { id: 'Umum', en: 'General' },
+    creative: { id: 'Kreatif', en: 'Creative' },
+    professional: { id: 'Profesional', en: 'Professional' },
+    industry: { id: 'Industri', en: 'Industry' },
+    layout: { id: 'Variasi Layout', en: 'Layout Variants' },
+};
+
+export function getTemplateCategoryLabel(category: TemplateCategory, language: 'id' | 'en'): string {
+    const labels = TEMPLATE_CATEGORY_LABELS[category];
+    if (!labels) return category;
+    return language === 'en' ? labels.en : labels.id;
+}
+
 export function getTemplateById(id: string): TemplateConfig | undefined {
     return TEMPLATES.find(t => t.id === id);
 }

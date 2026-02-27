@@ -4,7 +4,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCVStore } from '@/store/useCVStore';
-import { TEMPLATES, TEMPLATE_CATEGORIES, canUseTemplate, isLockedForFreeTemplate } from '@/lib/templates';
+import {
+    TEMPLATES,
+    TEMPLATE_CATEGORIES,
+    canUseTemplate,
+    getTemplateCategoryLabel,
+    isLockedForFreeTemplate
+} from '@/lib/templates';
 import { TemplateCategory } from '@/types/cv';
 import TemplateThumbnail from '@/components/editor/TemplateThumbnails';
 import { ArrowLeft } from 'lucide-react';
@@ -88,7 +94,7 @@ export default function TemplatesPage() {
                             }}
                         >
                             <span>{cat.icon}</span>
-                            <span>{cat.name}</span>
+                            <span>{getTemplateCategoryLabel(key as TemplateCategory, language === 'en' ? 'en' : 'id')}</span>
                         </button>
                     ))}
                 </div>
@@ -127,7 +133,11 @@ export default function TemplatesPage() {
                             }}>
                                 <TemplateThumbnail tpl={tpl} />
                                 {isLocked && <span className="template-lock-indicator">🔒</span>}
-                                {tpl.popular && <div style={{ position: 'absolute', top: 12, right: 12, background: '#f43f5e', color: 'white', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '100px', fontWeight: 600 }}>Popular</div>}
+                                {tpl.popular && (
+                                    <div style={{ position: 'absolute', top: 12, right: 12, background: '#f43f5e', color: 'white', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '100px', fontWeight: 600 }}>
+                                        {isEn ? 'Popular' : 'Populer'}
+                                    </div>
+                                )}
                                 {tpl.badge && <div style={{ position: 'absolute', top: 12, left: 12, background: 'var(--accent)', color: 'white', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '100px', fontWeight: 600 }}>{tpl.badge}</div>}
                             </div>
                             <div className="template-info" style={{ textAlign: 'center' }}>

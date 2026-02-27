@@ -346,7 +346,15 @@ export default function AppHeader() {
                         <h1>EasY CV</h1>
                     </a>
                     <div className="header-actions">
-                        <button className="btn btn-ghost" onClick={toggleTheme} title={settings.theme === 'light' ? 'Beralih ke Mode Gelap' : 'Switch to Light Mode'}>
+                        <button
+                            className="btn btn-ghost"
+                            onClick={toggleTheme}
+                            title={
+                                isEn
+                                    ? (settings.theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode')
+                                    : (settings.theme === 'light' ? 'Beralih ke mode gelap' : 'Beralih ke mode terang')
+                            }
+                        >
                             {settings.theme === 'light' ? (
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -366,7 +374,11 @@ export default function AppHeader() {
                             )}
                             <span className="btn-label">{language === 'en' ? 'Theme' : 'Tema'}</span>
                         </button>
-                        <button className="btn btn-ghost btn-language" onClick={toggleLanguage} title={settings.language === 'en' ? 'Switch to Indonesian' : 'Ganti ke Bahasa Inggris'}>
+                        <button
+                            className="btn btn-ghost btn-language"
+                            onClick={toggleLanguage}
+                            title={settings.language === 'en' ? 'Switch to Indonesian' : 'Beralih ke Bahasa Inggris'}
+                        >
                             <span className="btn-emoji">{settings.language === 'en' ? '🇬🇧' : '🇮🇩'}</span>
                             <span className="btn-label">{settings.language === 'en' ? 'EN' : 'ID'}</span>
                         </button>
@@ -375,7 +387,7 @@ export default function AppHeader() {
                                 <polyline points="3 6 5 6 21 6" />
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                             </svg>
-                            <span className="btn-label">Reset</span>
+                            <span className="btn-label">{isEn ? 'Reset' : 'Reset'}</span>
                         </button>
                         <button className="btn btn-secondary btn-hide-mobile btn-collapse-xl" onClick={() => setShowImportModal(true)} title={t.importJson}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -383,7 +395,7 @@ export default function AppHeader() {
                                 <polyline points="7 10 12 15 17 10" />
                                 <line x1="12" y1="15" x2="12" y2="3" />
                             </svg>
-                            <span className="btn-label">Import Json</span>
+                            <span className="btn-label">{t.importJson}</span>
                         </button>
                         <button className="btn btn-secondary btn-hide-mobile btn-collapse-xl" onClick={handleExportJson} title={t.exportJson}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -391,7 +403,7 @@ export default function AppHeader() {
                                 <polyline points="17 8 12 3 7 8" />
                                 <line x1="12" y1="3" x2="12" y2="15" />
                             </svg>
-                            <span className="btn-label">Export Json</span>
+                            <span className="btn-label">{t.exportJson}</span>
                         </button>
                         <a className="btn btn-ghost btn-hide-mobile btn-collapse-xl" href="/pricing">
                             <span className="btn-label">{language === 'en' ? 'Pricing' : 'Harga'}</span>
@@ -441,21 +453,21 @@ export default function AppHeader() {
                                     type="button"
                                     onClick={() => { handleReset(); setIsMobileMenuOpen(false); }}
                                 >
-                                    <span>{language === 'en' ? 'Reset Data' : 'Reset Data'}</span>
+                                    <span>{t.resetCVData}</span>
                                 </button>
                                 <button
                                     className="btn btn-ghost"
                                     type="button"
                                     onClick={() => { setShowImportModal(true); setIsMobileMenuOpen(false); }}
                                 >
-                                    <span>Import Json</span>
+                                    <span>{t.importJson}</span>
                                 </button>
                                 <button
                                     className="btn btn-ghost"
                                     type="button"
                                     onClick={() => { handleExportJson(); setIsMobileMenuOpen(false); }}
                                 >
-                                    <span>Export Json</span>
+                                    <span>{t.exportJson}</span>
                                 </button>
                                 {authEnabled && (
                                     <button

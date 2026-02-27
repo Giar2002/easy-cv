@@ -2,7 +2,13 @@
 
 import { useRef, useEffect, useCallback } from 'react';
 import { useCVStore } from '@/store/useCVStore';
-import { TEMPLATES, TEMPLATE_CATEGORIES, canUseTemplate, isLockedForFreeTemplate } from '@/lib/templates';
+import {
+    TEMPLATES,
+    TEMPLATE_CATEGORIES,
+    canUseTemplate,
+    getTemplateCategoryLabel,
+    isLockedForFreeTemplate,
+} from '@/lib/templates';
 import { TemplateCategory } from '@/types/cv';
 import { useState } from 'react';
 import TemplateThumbnail from './TemplateThumbnails';
@@ -199,13 +205,13 @@ function ColorPicker() {
 export default function SettingsTab() {
     const settings = useCVStore(s => s.settings);
     const setSettings = useCVStore(s => s.setSettings);
-    const language = useCVStore(s => s.settings.language);
+    const language = useCVStore(s => s.settings.language) || 'en';
     const t = getTranslations(language);
     const [activeCategory, setActiveCategory] = useState<TemplateCategory>('all');
     const isPremiumUser = Boolean(settings.isPremiumUser);
     const isEn = language === 'en';
 
-    const categories = Object.entries(TEMPLATE_CATEGORIES) as [TemplateCategory, { name: string; icon: string }][];
+    const categories = Object.keys(TEMPLATE_CATEGORIES) as TemplateCategory[];
     const filteredTemplates = activeCategory === 'all'
         ? TEMPLATES
         : activeCategory === 'popular'
@@ -283,10 +289,10 @@ export default function SettingsTab() {
             <div className="settings-group">
                 <h3 className="settings-title">{t.filterCategory}</h3>
                 <div className="template-category-filter">
-                    {categories.map(([key, cat]) => (
+                    {categories.map((key) => (
                         <button key={key} className={`category-btn ${activeCategory === key ? 'active' : ''}`}
                             onClick={() => setActiveCategory(key)}>
-                            {cat.icon} {cat.name}
+                            {TEMPLATE_CATEGORIES[key].icon} {getTemplateCategoryLabel(key, language)}
                         </button>
                     ))}
                 </div>
@@ -316,7 +322,9 @@ export default function SettingsTab() {
                                     {tpl.badge}
                                 </span>
                             )}
-                            {!tpl.badge && tpl.popular && <span className="template-badge popular">Populer</span>}
+                            {!tpl.badge && tpl.popular && (
+                                <span className="template-badge popular">{isEn ? 'Popular' : 'Populer'}</span>
+                            )}
                             {!tpl.badge && tpl.category === 'ats' && !tpl.popular && <span className="template-badge ats">ATS</span>}
                             {!tpl.badge && tpl.category === 'premium' && !tpl.popular && <span className="template-badge premium">Premium</span>}
                         </div>
