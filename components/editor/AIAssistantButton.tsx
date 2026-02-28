@@ -27,6 +27,8 @@ export default function AIAssistantButton({ value, onApply, feature = 'general' 
         serverError: isEn ? 'Failed to reach AI server.' : 'Gagal menghubungi AI server.',
         grammarTitle: isEn ? 'Grammar' : 'Tata Bahasa',
         enhanceTitle: isEn ? 'Enhance' : 'Percantik',
+        fixLabel: isEn ? 'Fix' : 'Perbaiki',
+        enhanceLabel: isEn ? 'Enhance' : 'Tingkatkan',
         panelTitle: isEn ? 'AI Suggestions' : 'Saran AI',
         apply: isEn ? 'Replace Original Text' : 'Ganti Teks Asli',
     };
@@ -47,7 +49,7 @@ export default function AIAssistantButton({ value, onApply, feature = 'general' 
             const res = await fetch('/api/ai', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...authHeader },
-                body: JSON.stringify({ text: value, action: action, feature })
+                body: JSON.stringify({ text: value, action: action, feature, language })
             });
             const data = await res.json();
 
@@ -80,10 +82,10 @@ export default function AIAssistantButton({ value, onApply, feature = 'general' 
         <div style={{ position: 'relative', display: 'inline-flex', marginLeft: 'auto' }}>
             <div style={{ display: 'flex', gap: '6px' }}>
                 <button type="button" onClick={() => handleAction('grammar')} disabled={loading || !value.replace(/<[^>]*>?/gm, '').trim()} className="btn-ai" title={ui.grammarTitle}>
-                    {loading ? <Loader2 size={12} className="spin" /> : <Check size={12} />} Fix
+                    {loading ? <Loader2 size={12} className="spin" /> : <Check size={12} />} {ui.fixLabel}
                 </button>
                 <button type="button" onClick={() => handleAction('enhance')} disabled={loading || !value.replace(/<[^>]*>?/gm, '').trim()} className="btn-ai" title={ui.enhanceTitle}>
-                    {loading ? <Loader2 size={12} className="spin" /> : <Wand2 size={12} />} Enhance
+                    {loading ? <Loader2 size={12} className="spin" /> : <Wand2 size={12} />} {ui.enhanceLabel}
                 </button>
             </div>
 

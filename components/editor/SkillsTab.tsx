@@ -84,11 +84,13 @@ function AiSkillSuggester({
     onAddMultiple,
     t,
     isEn,
+    language,
 }: {
     jobTitle: string;
     onAddMultiple: (names: string[]) => void;
     t: ReturnType<typeof getTranslations>;
     isEn: boolean;
+    language: 'id' | 'en';
 }) {
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -120,7 +122,7 @@ function AiSkillSuggester({
             const res = await fetch('/api/ai', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...authHeader },
-                body: JSON.stringify({ text: requestText, action: 'generate-skills', feature: 'skills' })
+                body: JSON.stringify({ text: requestText, action: 'generate-skills', feature: 'skills', language })
             });
             const data = await res.json();
 
@@ -247,7 +249,7 @@ export default function SkillsTab() {
                 <p className="section-desc">{t.skillsDesc} {texts.multiSkillHint}</p>
             </div>
 
-            <AiSkillSuggester jobTitle={jobTitle} onAddMultiple={handleAddMultiple} t={t} isEn={isEn} />
+            <AiSkillSuggester jobTitle={jobTitle} onAddMultiple={handleAddMultiple} t={t} isEn={isEn} language={isEn ? 'en' : 'id'} />
 
             <div className="bulk-skill-card">
                 <label className="bulk-skill-label">
