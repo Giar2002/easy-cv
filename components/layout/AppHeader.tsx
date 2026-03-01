@@ -47,6 +47,9 @@ export default function AppHeader() {
         emailLabel: isEn ? 'Email' : 'Email',
         emailPlaceholder: isEn ? 'you@example.com' : 'kamu@email.com',
         sendMagic: isEn ? 'Send Magic Link' : 'Kirim Magic Link',
+        continueWithGoogle: isEn ? 'Continue with Google' : 'Lanjutkan dengan Google',
+        googleFailed: isEn ? 'Google login failed.' : 'Login Google gagal.',
+        orMagicLink: isEn ? 'or use magic link' : 'atau gunakan magic link',
         close: isEn ? 'Close' : 'Tutup',
         checkMail: isEn ? 'Magic link sent. Check your email inbox.' : 'Magic link terkirim. Cek inbox email kamu.',
         logoutSuccess: isEn ? 'Logged out successfully.' : 'Berhasil logout.',
@@ -199,6 +202,33 @@ export default function AppHeader() {
             setShowAuthModal(false);
         } catch {
             toast.error(authText.authFailed);
+        } finally {
+            setAuthBusy(false);
+        }
+    }
+
+    async function handleGoogleLogin() {
+        if (!authEnabled) {
+            toast.error(authText.authNotReady);
+            return;
+        }
+        const supabase = getSupabaseBrowserClient();
+        if (!supabase) {
+            toast.error(authText.authNotReady);
+            return;
+        }
+        setAuthBusy(true);
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/builder`,
+                },
+            });
+            if (error) throw error;
+            setShowAuthModal(false);
+        } catch {
+            toast.error(authText.googleFailed);
         } finally {
             setAuthBusy(false);
         }
@@ -509,6 +539,16 @@ export default function AppHeader() {
                                 </>
                             ) : (
                                 <>
+                                    <button className="btn btn-ghost auth-google-btn" onClick={handleGoogleLogin} disabled={authBusy}>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path fill="#EA4335" d="M12 10.2v3.9h5.4c-.2 1.3-1.5 3.9-5.4 3.9-3.2 0-5.8-2.7-5.8-6s2.6-6 5.8-6c1.8 0 3 0.8 3.7 1.4l2.5-2.4C16.6 3.5 14.5 2.7 12 2.7 7.2 2.7 3.3 6.8 3.3 12s3.9 9.3 8.7 9.3c5 0 8.3-3.5 8.3-8.5 0-.6-.1-1-.2-1.5H12z" />
+                                            <path fill="#34A853" d="M3.3 7.9l3.2 2.3C7.3 8 9.5 6.7 12 6.7c1.8 0 3 0.8 3.7 1.4l2.5-2.4C16.6 3.5 14.5 2.7 12 2.7 8 2.7 4.6 4.9 3.3 7.9z" />
+                                            <path fill="#FBBC05" d="M12 21.3c2.4 0 4.5-.8 6-2.2l-2.8-2.2c-.8.6-1.8 1-3.2 1-2.5 0-4.6-1.7-5.4-4l-3.2 2.5c1.4 3 4.5 4.9 8.6 4.9z" />
+                                            <path fill="#4285F4" d="M20.3 12.8c0-.6-.1-1-.2-1.5H12v3.9h5.4c-.3 1.1-.9 2-1.9 2.7l2.8 2.2c1.7-1.6 2.7-4 2.7-7.3z" />
+                                        </svg>
+                                        <span>{authText.continueWithGoogle}</span>
+                                    </button>
+                                    <div className="auth-divider"><span>{authText.orMagicLink}</span></div>
                                     <label className="auth-modal-label">{authText.emailLabel}</label>
                                     <input
                                         className="form-input"
